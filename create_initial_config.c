@@ -5,6 +5,7 @@
 int main()
 {
   char input;
+  FILE* fout;
   system("clear");
   printf("%s\n", "[!] Warning: previous config file will be lost!");
   printf("%s\n", "Do you want to continue? [Y/N]");
@@ -30,5 +31,13 @@ int main()
     }
   }
   system("rm -rf .config");
+  fout=fopen(".config","w");
+  fprintf(fout,"%s\n","#This is default config file, please change parameters as you need");
+  fprintf(fout,"%s\n","web_enable: 1");
+  fprintf(fout,"%s\n","#Please remember all passwords, they will be deleted after first initialization!");
+  fprintf(fout,"%s\n","username: admin");
+  fprintf(fout,"%s\n","user_password: admin");
+  fprintf(fout,"%s\n","superuser: root");
+  fprintf(fout,"%s\n","superuser_password: toor");
   return 0;
 }
