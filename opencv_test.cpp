@@ -23,6 +23,7 @@ inline void generate_url()
 
 int main()
 {
+  cam.url="rtsp://172.18.18.1:554/live/0/MAIN";
   VideoCapture cap (cam.url);
   Mat img;
   while (true)
