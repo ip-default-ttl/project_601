@@ -44,5 +44,8 @@ int main()
   fprintf(fout,"%s\n","SQL_ip: 127.0.0.1");
   fprintf(fout,"%s\n","SQL_user: root");
   fprintf(fout,"%s\n","SQL_pass: toor");
+  fprintf(fout,"%s\n","Cam_Ip: 0.0.0.0");
+  fprintf(fout,"%s\n","Cam_login: admin");
+  fprintf(fout,"%s\n","Cam_password: admin");
   return 0;
 }
