@@ -4,12 +4,17 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
+//including tesseract
+#include <tesseract/baseapi.h>
+#include <leptonica/allheaders.h>
 //other libs libs
 #include <cstdlib>
 #include <iostream>
 #include <vector>
 #include <cmath>
 #include <algorithm>
+//for serial port
+#include <termios.h>
 
 
 using namespace cv;
@@ -49,17 +54,17 @@ int main()
   {
   rbeg = Point(i.x, i.y);
   rend = Point(i.x+i.width, i.y+i.height);
-  }
   rectangle(source_img, rbeg, rend, Scalar(1,255,1), 2);
-  imshow("Пидорас найден", source_img);
+  }
+  imshow("Пидорас найден", source_img);//поменять имя окна
   plate.clear();
   cascadePlate.detectMultiScale(gray2, plate);
   for (auto& i:plate)
   {
   rbeg = Point(i.x, i.y);
   rend = Point(i.x+i.width, i.y+i.height);
-  }
   rectangle(source_img2, rbeg, rend, Scalar(255,1,1), 2);
-  imshow("Пидорас найден2", source_img2);
+  }
+  imshow("Пидорас найден2", source_img2);//тут тоже
   waitKey(0);
 }
