@@ -23,17 +23,19 @@ using namespace std;
 int main()
 {
   //видеопоток
- /* cam.url="rtsp://172.18.18.1:554/live/0/MAIN";
-  VideoCapture cap (cam.url);
+  /*string url="rtsp://admin:180500Kn@172.18.18.3:554/live/0/SUB";
+  VideoCapture cap (url);
   Mat source_img;
   while (true)
   {
     cap>>source_img;
-    Mat edges;
-    cvtColor(img, edges, COLOR_BGR2GRAY);
-    Canny(edges, edges, 30, 60);
     namedWindow("main stream", WINDOW_AUTOSIZE);
-    imshow("main stream", edges);
+    imshow("main stream", source_img);
+    Mat edges;
+    cvtColor(source_img, edges, COLOR_BGR2GRAY);
+    Canny(edges, edges, 30, 60);
+    namedWindow("main stream2", WINDOW_AUTOSIZE);
+    imshow("main stream2", edges);
     waitKey(0);
   }*/
   Mat source_img=imread("test.jpeg");
@@ -56,7 +58,7 @@ int main()
   rend = Point(i.x+i.width, i.y+i.height);
   rectangle(source_img, rbeg, rend, Scalar(1,255,1), 2);
   }
-  imshow("Пидорас найден", source_img);//поменять имя окна
+  imshow("Result", source_img);//поменять имя окна
   plate.clear();
   cascadePlate.detectMultiScale(gray2, plate);
   for (auto& i:plate)
@@ -65,6 +67,7 @@ int main()
   rend = Point(i.x+i.width, i.y+i.height);
   rectangle(source_img2, rbeg, rend, Scalar(255,1,1), 2);
   }
-  imshow("Пидорас найден2", source_img2);//тут тоже
+  imshow("Result2", source_img2);//тут тоже
+  
   waitKey(0);
 }
