@@ -71,11 +71,19 @@ int main()
   {
     cout<<"Error from open:"<<errno<<endl<<strerror(errno)<<endl;
   }
-  set_interface_attribs (fd, B115200, 0);
-  set_blocking (fd, 0);
-  write (fd, "hello!\n", 7);
+  set_interface_attribs (serial_port, B115200, 0);
+  set_blocking (serial_port, 0);
+  write (serial_port, "hello!\n", 7);
   char buf [100];
   usleep ((7 + 25) * 100);
-  int n = read (fd, buf, sizeof buf);
+  int n = read (serial_port, buf, sizeof buf);
+  //cout<<buf;
+  while (true)
+  {
+  write (serial_port, "hi!\n", 7);
+  usleep ((7 + 25) * 100);
+  n = read (serial_port, buf, sizeof buf);
+  }
+  //cout<<buf;
   close(serial_port);
 }
