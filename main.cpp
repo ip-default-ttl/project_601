@@ -44,7 +44,7 @@ int main()
   Mat gray2;
   CascadeClassifier cascadePlate;
   CascadeClassifier cascadePlate2;
-  cascadePlate.load("haarcascade_russian_plate_number.xml"); // Загрузка каскада
+  cascadePlate.load("third_casscade.xml"); // Загрузка каскада
   cascadePlate2.load("haarcascade_licence_plate_rus_16stages.xml");
   cvtColor(source_img, gray, COLOR_BGR2GRAY);
   //cvtColor(source_img2, gray2, COLOR_BGR2GRAY);
@@ -69,6 +69,6 @@ int main()
   }
   imshow("Result2", source_img2);//тут тоже
   waitKey(0);*/
-  waitKey(10);
+  waitKey(100);
 }
 }
