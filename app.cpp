@@ -33,7 +33,7 @@ void on_button1_clicked(GtkButton *button, gpointer user_data)
     gtk_widget_show(window2);
     gtk_main();
   }
-  else gtk_label_set_text(GTK_LABEL(pass_incorrect), "неправильный пароль");
+  else gtk_label_set_text(GTK_LABEL(pass_incorrect), "Данные не верны, попробуйте снова!");
 }
 
 void on_button2_clicked(GtkButton *button, gpointer user_data)
