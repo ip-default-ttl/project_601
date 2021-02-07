@@ -4,17 +4,19 @@
 #include <iostream>
 #include <cstdlib>
 
-//эту хуйню не удалять и в main не пихать
+//виджеты первого окна
 GtkWidget* window;
-GtkWidget* window2;
 GtkWidget* fixed1;
-GtkWidget* fixed2;
 GtkWidget* button1;
 GtkWidget* button2;
-GtkWidget* button3;
 GtkWidget* login_entry;
 GtkWidget* password_entry;
 GtkWidget* pass_incorrect;
+//виджеты второго окна
+GtkWidget* window2;
+GtkWidget* fixed2;
+GtkWidget* button3;
+//какая-то неведомая поебень
 GtkBuilder* builder;
 
 void on_button1_clicked(GtkButton *button, gpointer user_data)
