@@ -66,24 +66,31 @@ void set_blocking (int fd, int should_block)
 int main()
 {
   char* portname = "/dev/ttyUSB0";
-  int serial_port = open(portname, O_RDWR);
+  int serial_port = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
   if (serial_port < 0)
   {
     cout<<"Error from open:"<<errno<<endl<<strerror(errno)<<endl;
   }
-  set_interface_attribs (serial_port, B115200, 0);
+  //string message;
+  //cin>>message;
+  //message+="/n";
+  set_interface_attribs (serial_port, B9600, 0);
   set_blocking (serial_port, 0);
-  write (serial_port, "hello!\n", 7);
+  /*write (serial_port, message.c_str(), 1);
   char buf [100];
-  usleep ((7 + 25) * 100);
-  int n = read (serial_port, buf, sizeof buf);
-  //cout<<buf;
+  usleep ((7 + 50) * 100);
+  int n = read (serial_port, buf, 100);
+  cout<<buf<<endl;*/
+  int n;
+  char buf[100]="";
+  for (int i=0; i<10; i++){
+  write (serial_port, "tem", 3);}
   while (true)
   {
-  write (serial_port, "hi!\n", 7);
   usleep ((7 + 25) * 100);
-  n = read (serial_port, buf, sizeof buf);
+  n = read (serial_port, buf, 100);
+  cout<<n<<endl;
+  cout<<buf;
   }
-  //cout<<buf;
   close(serial_port);
 }
