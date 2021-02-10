@@ -132,17 +132,15 @@ void on_button2_clicked(GtkButton *button, gpointer user_data)
 
 void on_button3_clicked (GtkButton *button, gpointer user_data)
 {
-  gtk_image_set_from_pixbuf(GTK_IMAGE(video),ccc);
-  gtk_widget_show(video);
+
 }
 
 void toggle1_toggled(GtkButton *button, gpointer user_data)
 {
-    std::cout<<"1"<<std::endl;
     std::string msg;
     if (o) msg="1";
     else msg="0";
-    write (serial_port,msg.c_str() , 1);
+    write (serial_port,msg.c_str() , 100);
     o=!o;
 }
 
@@ -172,24 +170,24 @@ bool test_func()
 {
   //temp = getRandomNumber(0,30);
   //vlaga = getRandomNumber(0,100);
-  char buf[100] = "";
-  int n;
+  int n=0;
+  char buf[100]="";
+  char buf2[100]="";
   write (serial_port, "tem", 3);
-  usleep ((7 + 50) * 100);
-  while (buf==""){
-  n = read (serial_port, buf, 100);}
-  std::cout<<n<<std::endl;
+  usleep ((7 + 25) * 100);
+  while (n==0)
+  {
+  n = read (serial_port, buf, 100);
+  }
   gtk_button_set_label(GTK_BUTTON((GtkWidget*) button4), buf);
+  n=0;
   write (serial_port, "hum", 3);
   usleep ((7 + 50) * 100);
-  n = read (serial_port, buf, 100);
-  gtk_button_set_label(GTK_BUTTON((GtkWidget*) button5), buf);
-  //std::string new_label = "Температура: ";
-
-  //new_label+=std::to_string(temp);
-  //gtk_button_set_label(GTK_BUTTON((GtkWidget*) button4), new_label.c_str());
-  //new_label = "Влажность: "+std::to_string(vlaga)+"%";
-  //gtk_button_set_label(GTK_BUTTON((GtkWidget*) button5), new_label.c_str());
+  while (n==0)
+  {
+    n = read (serial_port, buf2, 100);
+  }
+  gtk_button_set_label(GTK_BUTTON((GtkWidget*) button5), buf2);
   return TRUE;
 }
 
@@ -220,15 +218,14 @@ int main (int argc, char* argv[])
   g_signal_connect(GTK_BUTTON(button3), "clicked", G_CALLBACK(on_button3_clicked), NULL);
   g_signal_connect(GTK_BUTTON(button2), "clicked", G_CALLBACK(on_button2_clicked), NULL);
   g_signal_connect(GTK_BUTTON(button1), "clicked", G_CALLBACK(on_button1_clicked), NULL);
-  char* portname = "/dev/ttyUSB0";
-  serial_port = open(portname, O_RDWR);
+  char* portname = "/dev/ttyUSB1";
+  serial_port = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
   if (serial_port < 0)
   {
     std::cout<<"Error from open:"<<errno<<std::endl<<strerror(errno)<<std::endl;
   }
   set_interface_attribs (serial_port, B9600, 0);
   set_blocking (serial_port, 0);
-
   g_timeout_add (10000, GSourceFunc(test_func), NULL);
   GError* error=NULL;
   ccc = gdk_pixbuf_new_from_file("test.jpeg", &error);
@@ -237,7 +234,10 @@ int main (int argc, char* argv[])
     std::cout << error->message << std::endl;
     g_clear_error (&error);
 }
+  gtk_image_set_from_pixbuf(GTK_IMAGE(video),ccc);
+  gtk_widget_show(video);
   gtk_widget_show(window);
   gtk_main();
+  close(serial_port);
   return 0;
 }

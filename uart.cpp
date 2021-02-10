@@ -65,7 +65,7 @@ void set_blocking (int fd, int should_block)
 
 int main()
 {
-  char* portname = "/dev/ttyUSB0";
+  char* portname = "/dev/ttyUSB1";
   int serial_port = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
   if (serial_port < 0)
   {
@@ -83,14 +83,11 @@ int main()
   cout<<buf<<endl;*/
   int n;
   char buf[100]="";
-  for (int i=0; i<10; i++){
-  write (serial_port, "tem", 3);}
-  while (true)
-  {
+  write (serial_port, "tem", 3);
   usleep ((7 + 25) * 100);
+  while (buf!=""){
   n = read (serial_port, buf, 100);
   cout<<n<<endl;
-  cout<<buf;
-  }
+  cout<<buf<<endl;}
   close(serial_port);
 }
