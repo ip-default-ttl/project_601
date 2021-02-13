@@ -158,11 +158,11 @@ bool stream()
    widget->style->fg_gc[GTK_WIDGET_STATE (widget)], pix, 0, 0, 0, 0,
    -1, -1, GDK_RGB_DITHER_NONE, 0, 0); Other possible values are  GDK_RGB_DITHER_MAX,  GDK_RGB_DITHER_NORMAL
 
-         char c = cvWaitKey(33);
+         char c = cv::WaitKey(33);
          if( c == 27 ) break;
    }
 
-   cvReleaseCapture( &cap=ture );
+   cv::ReleaseCapture( &cap=ture );
    return TRUE;*/
 }
 
@@ -171,21 +171,40 @@ bool test_func()
   //temp = getRandomNumber(0,30);
   //vlaga = getRandomNumber(0,100);
   int n=0;
-  char buf[100]="";
-  char buf2[100]="";
+  int time_start;
+  int time_end;
+  int is_timeout;
+  char buf[100] = "";
+  char buf2[100] = "";
   write (serial_port, "tem", 3);
   usleep ((7 + 25) * 100);
+  time_start=clock();
   while (n==0)
   {
-  n = read (serial_port, buf, 100);
+    n = read (serial_port, buf, 100);
+    time_end = clock();
+    is_timeout = (time_end - time_start) / CLOCKS_PER_SEC;
+    if (is_timeout>5)
+    {
+        cout<<"recieve timeout!"<<endl;
+        break;
+    }
   }
   gtk_button_set_label(GTK_BUTTON((GtkWidget*) button4), buf);
   n=0;
   write (serial_port, "hum", 3);
   usleep ((7 + 50) * 100);
+  time_start=clock();
   while (n==0)
   {
     n = read (serial_port, buf2, 100);
+    time_end = clock();
+    is_timeout = (time_end - time_start) / CLOCKS_PER_SEC;
+    if (is_timeout>5)
+    {
+        cout<<"recieve timeout!"<<endl;
+        break;
+    }
   }
   gtk_button_set_label(GTK_BUTTON((GtkWidget*) button5), buf2);
   return TRUE;
