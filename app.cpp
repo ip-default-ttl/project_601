@@ -2,13 +2,14 @@
 #include <gtk/gtkx.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
-/*#include <opencv2/core/core.hpp>
+#include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>*/
+#include <opencv2/imgproc/imgproc.hpp>
 #include <cstring>
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <chrono>
 
 #include <termios.h>
 #include <errno.h>
@@ -40,6 +41,11 @@ int vlaga;
 int serial_port;
 
 bool o=true;
+
+void on_button1_clicked(GtkButton *button, gpointer user_data);
+void on_button2_clicked(GtkButton *button, gpointer user_data);
+void on_button3_clicked(GtkButton *button, gpointer user_data);
+void toggle1_toggled(GtkButton *button, gpointer user_data);
 
 int set_interface_attribs (int fd, int speed, int parity)
 {
@@ -104,66 +110,19 @@ inline int getRandomNumber(int min, int max)
 }
 //блять ну и язык, даже рандома без static_cast не напишешь
 
-void on_button1_clicked(GtkButton *button, gpointer user_data)
-{
-  std::string login;
-  const char* log = gtk_entry_get_text(GTK_ENTRY((GtkWidget*) login_entry));
-  std::string password;
-  const char* pas = gtk_entry_get_text(GTK_ENTRY((GtkWidget*) password_entry));
-  guint16 len = gtk_entry_get_text_length(GTK_ENTRY((GtkWidget*) login_entry));
-  login.assign(log, len);
-  len = gtk_entry_get_text_length(GTK_ENTRY((GtkWidget*) password_entry));
-  password.assign(pas, len);
-  if ((login == "admin")&&(password=="admin"))
-  {
-    gtk_widget_destroy(window);
-    gtk_widget_show(window2);
-    gtk_main();
-  }
-  else gtk_label_set_text(GTK_LABEL(pass_incorrect), "Неправильный логин/пароль!");
-}
-
-void on_button2_clicked(GtkButton *button, gpointer user_data)
-{
-    gtk_entry_set_text(GTK_ENTRY(login_entry), "");
-    gtk_entry_set_text(GTK_ENTRY(password_entry), "");
-    gtk_label_set_text(GTK_LABEL(pass_incorrect), "");
-}
-
-void on_button3_clicked (GtkButton *button, gpointer user_data)
-{
-
-}
-
-void toggle1_toggled(GtkButton *button, gpointer user_data)
-{
-    std::string msg;
-    if (o) msg="1";
-    else msg="0";
-    write (serial_port,msg.c_str() , 100);
-    o=!o;
-}
-
 bool stream()
 {
-  /*frame = cvQueryFrame( capture );
-          if(!frame) break;
-
+  GdkPixbuf* pix;
+  std::string url="rtsp://admin:180500Kn@172.18.18.3:554/live/0/SUB";
+  cv::VideoCapture cap (url);
+  cv::Mat* frame;
+  cap>>frame;
          pix = gdk_pixbuf_new_from_data((guchar*) frame->imageData,
          GDK_COLORSPACE_RGB, FALSE, frame->depth, frame->width,
          frame->height, (frame->widthStep), NULL, NULL);
-
-
-         gdk_draw_pixbuf(widget->window,
-   widget->style->fg_gc[GTK_WIDGET_STATE (widget)], pix, 0, 0, 0, 0,
-   -1, -1, GDK_RGB_DITHER_NONE, 0, 0); Other possible values are  GDK_RGB_DITHER_MAX,  GDK_RGB_DITHER_NORMAL
-
-         char c = cv::WaitKey(33);
-         if( c == 27 ) break;
-   }
-
-   cv::ReleaseCapture( &cap=ture );
-   return TRUE;*/
+         gtk_image_set_from_pixbuf(GTK_IMAGE(video),pix);
+         cv::waitKey(10);
+   return TRUE;
 }
 
 bool test_func()
@@ -172,38 +131,35 @@ bool test_func()
   //vlaga = getRandomNumber(0,100);
   int n=0;
   int time_start;
-  int time_end;
-  int is_timeout;
   char buf[100] = "";
   char buf2[100] = "";
   write (serial_port, "tem", 3);
-  usleep ((7 + 25) * 100);
-  time_start=clock();
+  auto t1=std::chrono::high_resolution_clock::now();
+  auto t2 = std::chrono::high_resolution_clock::now();
   while (n==0)
   {
     n = read (serial_port, buf, 100);
-    time_end = clock();
-    is_timeout = (time_end - time_start) / CLOCKS_PER_SEC;
-    if (is_timeout>5)
+    t2 = std::chrono::high_resolution_clock::now();
+    unsigned long long int duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
+    if (duration>2)
     {
-        cout<<"recieve timeout!"<<endl;
+        std::cout<<"recieve timeout!"<<std::endl;
         break;
     }
   }
   gtk_button_set_label(GTK_BUTTON((GtkWidget*) button4), buf);
   n=0;
   write (serial_port, "hum", 3);
-  usleep ((7 + 50) * 100);
-  time_start=clock();
+  t1=std::chrono::high_resolution_clock::now();
   while (n==0)
   {
     n = read (serial_port, buf2, 100);
-    time_end = clock();
-    is_timeout = (time_end - time_start) / CLOCKS_PER_SEC;
-    if (is_timeout>5)
+    t2 = std::chrono::high_resolution_clock::now();
+    unsigned long long int duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
+    if (duration>2)
     {
-        cout<<"recieve timeout!"<<endl;
-        break;
+      std::cout<<"recieve timeout!"<<std::endl;
+      break;
     }
   }
   gtk_button_set_label(GTK_BUTTON((GtkWidget*) button5), buf2);
@@ -237,7 +193,7 @@ int main (int argc, char* argv[])
   g_signal_connect(GTK_BUTTON(button3), "clicked", G_CALLBACK(on_button3_clicked), NULL);
   g_signal_connect(GTK_BUTTON(button2), "clicked", G_CALLBACK(on_button2_clicked), NULL);
   g_signal_connect(GTK_BUTTON(button1), "clicked", G_CALLBACK(on_button1_clicked), NULL);
-  char* portname = "/dev/ttyUSB1";
+  char* portname = "/dev/ttyUSB0";
   serial_port = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
   if (serial_port < 0)
   {
@@ -259,4 +215,54 @@ int main (int argc, char* argv[])
   gtk_main();
   close(serial_port);
   return 0;
+}
+
+void on_button1_clicked(GtkButton *button, gpointer user_data)
+{
+  std::string login;
+  const char* log = gtk_entry_get_text(GTK_ENTRY((GtkWidget*) login_entry));
+  std::string password;
+  const char* pas = gtk_entry_get_text(GTK_ENTRY((GtkWidget*) password_entry));
+  guint16 len = gtk_entry_get_text_length(GTK_ENTRY((GtkWidget*) login_entry));
+  login.assign(log, len);
+  len = gtk_entry_get_text_length(GTK_ENTRY((GtkWidget*) password_entry));
+  password.assign(pas, len);
+  if ((login == "admin")&&(password=="admin"))
+  {
+    gtk_widget_destroy(window);
+    gtk_widget_show(window2);
+    gtk_main();
+  }
+  else gtk_label_set_text(GTK_LABEL(pass_incorrect), "Неправильный логин/пароль!");
+}
+
+void on_button2_clicked(GtkButton *button, gpointer user_data)
+{
+    gtk_entry_set_text(GTK_ENTRY(login_entry), "");
+    gtk_entry_set_text(GTK_ENTRY(password_entry), "");
+    gtk_label_set_text(GTK_LABEL(pass_incorrect), "");
+}
+
+void on_button3_clicked (GtkButton *button, gpointer user_data)
+{
+  write (serial_port, "open", 4);
+}
+
+void toggle1_toggled(GtkButton *button, gpointer user_data)
+{
+    std::string msg;
+    if (o) msg="1";
+    else msg="0";
+    write (serial_port,msg.c_str() , 100);
+    o=!o;
+}
+
+void on_button4_clicked(GtkButton *button, gpointer user_data)
+{
+
+}
+
+void on_button5_clicked(GtkButton *button, gpointer user_data)
+{
+
 }
