@@ -1,10 +1,12 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkx.h>
+#include <gdk/gdk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core/types_c.h>
 #include <cstring>
 #include <iostream>
 #include <cstdlib>
@@ -41,6 +43,7 @@ int vlaga;
 int serial_port;
 
 bool o=true;
+bool recall;
 
 void on_button1_clicked(GtkButton *button, gpointer user_data);
 void on_button2_clicked(GtkButton *button, gpointer user_data);
@@ -110,19 +113,28 @@ inline int getRandomNumber(int min, int max)
 }
 //блять ну и язык, даже рандома без static_cast не напишешь
 
+bool update_stream(GdkPixbuf* frame)
+{
+  gtk_image_set_from_pixbuf(GTK_IMAGE(video),frame);
+  return FALSE;
+}
+
 bool stream()
 {
   GdkPixbuf* pix;
   std::string url="rtsp://admin:180500Kn@172.18.18.3:554/live/0/SUB";
-  cv::VideoCapture cap (url);
-  cv::Mat* frame;
+  cv::VideoCapture cap(url);
+  if (!cap.isOpened()) return 1;
+  cv::Mat frame;
+  while(true) {
+    std::cout<<"1";
   cap>>frame;
-         pix = gdk_pixbuf_new_from_data((guchar*) frame->imageData,
-         GDK_COLORSPACE_RGB, FALSE, frame->depth, frame->width,
-         frame->height, (frame->widthStep), NULL, NULL);
-         gtk_image_set_from_pixbuf(GTK_IMAGE(video),pix);
-         cv::waitKey(10);
-   return TRUE;
+  pix = gdk_pixbuf_new_from_data(frame.data, GDK_COLORSPACE_RGB, false, 8, frame.cols, frame.rows, frame.step, NULL, NULL);
+  g_idle_add(GSourceFunc(update_stream), pix);
+  cv::waitKey(10);
+}
+  cap.release();
+  return TRUE;
 }
 
 bool test_func()
@@ -201,18 +213,11 @@ int main (int argc, char* argv[])
   }
   set_interface_attribs (serial_port, B9600, 0);
   set_blocking (serial_port, 0);
-  g_timeout_add (10000, GSourceFunc(test_func), NULL);
-  GError* error=NULL;
-  ccc = gdk_pixbuf_new_from_file("test.jpeg", &error);
-  if( error != NULL )
-{
-    std::cout << error->message << std::endl;
-    g_clear_error (&error);
-}
-  gtk_image_set_from_pixbuf(GTK_IMAGE(video),ccc);
-  gtk_widget_show(video);
+  g_timeout_add_seconds (60, GSourceFunc(test_func), NULL);
+  GThread* thread1 = g_thread_new("thread1", GThreadFunc(stream), NULL);
   gtk_widget_show(window);
   gtk_main();
+  g_thread_exit(thread1);
   close(serial_port);
   return 0;
 }
@@ -227,10 +232,14 @@ void on_button1_clicked(GtkButton *button, gpointer user_data)
   login.assign(log, len);
   len = gtk_entry_get_text_length(GTK_ENTRY((GtkWidget*) password_entry));
   password.assign(pas, len);
+  std::cout<<"start!!"<<std::endl;
   if ((login == "admin")&&(password=="admin"))
   {
     gtk_widget_destroy(window);
+    gtk_main_quit();
     gtk_widget_show(window2);
+    GThread* thread1 = g_thread_new("thread1", GThreadFunc(stream), NULL);
+    std::cout<<"start!!"<<std::endl;
     gtk_main();
   }
   else gtk_label_set_text(GTK_LABEL(pass_incorrect), "Неправильный логин/пароль!");

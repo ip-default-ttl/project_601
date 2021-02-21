@@ -25,6 +25,7 @@ int main()
   //видеопоток
   string url="rtsp://admin:180500Kn@172.18.18.3:554/live/0/SUB";
   VideoCapture cap (url);
+  if (!cap) break;
   Mat source_img;
   while (true)
   {
