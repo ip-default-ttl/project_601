@@ -240,8 +240,8 @@
         </child>
         <child>
           <object class="GtkImage" id="video">
-            <property name="width_request">960</property>
-            <property name="height_request">800</property>
+            <property name="width_request">800</property>
+            <property name="height_request">448</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="stock">gtk-media-play</property>

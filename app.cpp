@@ -18,6 +18,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <thread>
+
 //виджеты первого окна
 GtkWidget* window;
 GtkWidget* fixed1;
@@ -43,7 +45,7 @@ int vlaga;
 int serial_port;
 
 bool o=true;
-bool recall;
+GThread* thread1;
 
 void on_button1_clicked(GtkButton *button, gpointer user_data);
 void on_button2_clicked(GtkButton *button, gpointer user_data);
@@ -122,17 +124,18 @@ bool update_stream(GdkPixbuf* frame)
 bool stream()
 {
   GdkPixbuf* pix;
+  unsigned long long int a=0;
   std::string url="rtsp://admin:180500Kn@172.18.18.3:554/live/0/SUB";
   cv::VideoCapture cap(url);
-  if (!cap.isOpened()) return 1;
+  if (!cap.isOpened()) {std::cout<<"???";return 1;}
   cv::Mat frame;
-  while(true) {
-    std::cout<<"1";
+  while (true) {
   cap>>frame;
-  pix = gdk_pixbuf_new_from_data(frame.data, GDK_COLORSPACE_RGB, false, 8, frame.cols, frame.rows, frame.step, NULL, NULL);
+  cvtColor(frame, frame, cv::COLOR_BGR2RGBA);
+  pix = gdk_pixbuf_new_from_data(frame.data, GDK_COLORSPACE_RGB, true, 8, frame.cols, frame.rows, frame.step, NULL, NULL);
   g_idle_add(GSourceFunc(update_stream), pix);
-  cv::waitKey(10);
-}
+  usleep(9000);
+  }
   cap.release();
   return TRUE;
 }
@@ -178,6 +181,11 @@ bool test_func()
   return TRUE;
 }
 
+bool start() {
+  thread1 = g_thread_try_new("thread", GThreadFunc(stream), NULL, NULL);
+  return TRUE;
+}
+
 int main (int argc, char* argv[])
 {
   gtk_init(&argc, &argv);
@@ -214,10 +222,10 @@ int main (int argc, char* argv[])
   set_interface_attribs (serial_port, B9600, 0);
   set_blocking (serial_port, 0);
   g_timeout_add_seconds (60, GSourceFunc(test_func), NULL);
-  GThread* thread1 = g_thread_new("thread1", GThreadFunc(stream), NULL);
   gtk_widget_show(window);
+  std::thread thread(stream);
+  thread.detach();
   gtk_main();
-  g_thread_exit(thread1);
   close(serial_port);
   return 0;
 }
@@ -232,14 +240,10 @@ void on_button1_clicked(GtkButton *button, gpointer user_data)
   login.assign(log, len);
   len = gtk_entry_get_text_length(GTK_ENTRY((GtkWidget*) password_entry));
   password.assign(pas, len);
-  std::cout<<"start!!"<<std::endl;
   if ((login == "admin")&&(password=="admin"))
   {
     gtk_widget_destroy(window);
-    gtk_main_quit();
     gtk_widget_show(window2);
-    GThread* thread1 = g_thread_new("thread1", GThreadFunc(stream), NULL);
-    std::cout<<"start!!"<<std::endl;
     gtk_main();
   }
   else gtk_label_set_text(GTK_LABEL(pass_incorrect), "Неправильный логин/пароль!");
