@@ -23,36 +23,55 @@
 //виджеты первого окна
 GtkWidget* window;
 GtkWidget* fixed1;
-GtkWidget* button1;
-GtkWidget* button2;
+
+GtkWidget* button1_1;
+GtkWidget* button1_2;
+
 GtkWidget* login_entry;
 GtkWidget* password_entry;
+
 GtkWidget* pass_incorrect;
 //виджеты второго окна
 GtkWidget* window2;
 GtkWidget* fixed2;
-GtkWidget* button3;
+
+GtkWidget* button2_1;
+GtkWidget* button2_2;
+GtkWidget* button2_3;
+GtkWidget* button2_4;
+GtkWidget* button2_5;
+GtkWidget* button2_6;
+
 GtkWidget* toggle1;
-GtkWidget* button4;
-GtkWidget* button5;
+GtkWidget* toggle2_1;
+GtkWidget* toggle2_2;
+
+GtkWidget* video1;
+GtkWidget* photo;
+
+GtkWidget* text2_1;
 //какая-то неведомая поебень
 GtkBuilder* builder;
-GtkWidget* video;
 GdkPixbuf* ccc;
 //данные датчиков
 int temp;
 int vlaga;
+//служебные переменныые
 int serial_port;
-
 bool o=true;
+bool toggle_under_upgrade=false;
 GThread* thread1;
+bool toggle2_1_on = false;
+bool toggle2_2_on = false;
 
-void on_button1_clicked(GtkButton *button, gpointer user_data);
-void on_button2_clicked(GtkButton *button, gpointer user_data);
+void on_button1_1_clicked(GtkButton *button, gpointer user_data);
+void on_button1_2_clicked(GtkButton *button, gpointer user_data);
 void on_button3_clicked(GtkButton *button, gpointer user_data);
 void toggle1_toggled(GtkButton *button, gpointer user_data);
+int toggle2_1_toggled(GtkButton *button, gpointer user_data);
+int toggle2_2_toggled(GtkButton *button, gpointer user_data);
 
-int set_interface_attribs (int fd, int speed, int parity)
+inline int set_interface_attribs (int fd, int speed, int parity)
 {
         struct termios tty;
         if (tcgetattr (fd, &tty) != 0)
@@ -91,7 +110,7 @@ int set_interface_attribs (int fd, int speed, int parity)
         return 0;
 }
 
-void set_blocking (int fd, int should_block)
+inline void set_blocking (int fd, int should_block)
 {
         struct termios tty;
         memset (&tty, 0, sizeof tty);
@@ -117,7 +136,7 @@ inline int getRandomNumber(int min, int max)
 
 bool update_stream(GdkPixbuf* frame)
 {
-  gtk_image_set_from_pixbuf(GTK_IMAGE(video),frame);
+  gtk_image_set_from_pixbuf(GTK_IMAGE(video1),frame);
   return FALSE;
 }
 
@@ -162,7 +181,7 @@ bool test_func()
         break;
     }
   }
-  gtk_button_set_label(GTK_BUTTON((GtkWidget*) button4), buf);
+  gtk_button_set_label(GTK_BUTTON((GtkWidget*) button2_2), buf);
   n=0;
   write (serial_port, "hum", 3);
   t1=std::chrono::high_resolution_clock::now();
@@ -177,7 +196,7 @@ bool test_func()
       break;
     }
   }
-  gtk_button_set_label(GTK_BUTTON((GtkWidget*) button5), buf2);
+  gtk_button_set_label(GTK_BUTTON((GtkWidget*) button2_3), buf2);
   return TRUE;
 }
 
@@ -191,28 +210,46 @@ int main (int argc, char* argv[])
   gtk_init(&argc, &argv);
   srand(time(0));
   builder = gtk_builder_new_from_file("app.glade");
+  //окно входа
   window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
-  window2 = GTK_WIDGET(gtk_builder_get_object(builder, "window2"));
+
   fixed1 = GTK_WIDGET(gtk_builder_get_object(builder, "fixed1"));
-  fixed2 = GTK_WIDGET(gtk_builder_get_object(builder, "fixed2"));
-  button1 = GTK_WIDGET(gtk_builder_get_object(builder, "button1"));
-  button2 = GTK_WIDGET(gtk_builder_get_object(builder, "button2"));
-  button3 = GTK_WIDGET(gtk_builder_get_object(builder, "button3"));
-  button4 = GTK_WIDGET(gtk_builder_get_object(builder, "button4"));
-  button5 = GTK_WIDGET(gtk_builder_get_object(builder, "button5"));
+
+  button1_1 = GTK_WIDGET(gtk_builder_get_object(builder, "button1_1"));
+  button1_2 = GTK_WIDGET(gtk_builder_get_object(builder, "button1_2"));
+
   login_entry = GTK_WIDGET(gtk_builder_get_object(builder, "login_entry"));
   password_entry = GTK_WIDGET(gtk_builder_get_object(builder, "password_entry"));
+
   pass_incorrect = GTK_WIDGET(gtk_builder_get_object(builder, "pass_incorrect"));
+  //основное окно
+  window2 = GTK_WIDGET(gtk_builder_get_object(builder, "main_window"));
+
+  fixed2 = GTK_WIDGET(gtk_builder_get_object(builder, "fixed2"));
+
+  button2_1 = GTK_WIDGET(gtk_builder_get_object(builder, "button2_1"));
+  button2_2 = GTK_WIDGET(gtk_builder_get_object(builder, "button2_2"));
+  button2_3 = GTK_WIDGET(gtk_builder_get_object(builder, "button2_3"));
+  button2_4 = GTK_WIDGET(gtk_builder_get_object(builder, "button2_4"));
+
+  text2_1 = GTK_WIDGET(gtk_builder_get_object(builder, "text2_1"));
+
   toggle1 = GTK_WIDGET(gtk_builder_get_object(builder, "toggle1"));
-  video = GTK_WIDGET(gtk_builder_get_object(builder, "video"));
+  toggle2_1 = GTK_WIDGET(gtk_builder_get_object(builder, "toggle2_1"));
+  toggle2_2 = GTK_WIDGET(gtk_builder_get_object(builder, "toggle2_2"));
+
+  video1 = GTK_WIDGET(gtk_builder_get_object(builder, "video1"));
+  //подсоединяем функции кнопок
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(window2, "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(toggle1, "toggled", G_CALLBACK(toggle1_toggled), NULL);
+  g_signal_connect(toggle2_1, "toggled", G_CALLBACK(toggle2_1_toggled), NULL);
+  g_signal_connect(toggle2_1, "toggled", G_CALLBACK(toggle2_2_toggled), NULL);
   //g_signal_connect(GTK_BUTTON(button5), "clicked", G_CALLBACK(on_button5_clicked), NULL);
   //g_signal_connect(GTK_BUTTON(button4), "clicked", G_CALLBACK(on_button4_clicked), NULL);
-  g_signal_connect(GTK_BUTTON(button3), "clicked", G_CALLBACK(on_button3_clicked), NULL);
-  g_signal_connect(GTK_BUTTON(button2), "clicked", G_CALLBACK(on_button2_clicked), NULL);
-  g_signal_connect(GTK_BUTTON(button1), "clicked", G_CALLBACK(on_button1_clicked), NULL);
+  g_signal_connect(GTK_BUTTON(button2_1), "clicked", G_CALLBACK(on_button3_clicked), NULL);
+  g_signal_connect(GTK_BUTTON(button1_2), "clicked", G_CALLBACK(on_button1_2_clicked), NULL);
+  g_signal_connect(GTK_BUTTON(button1_1), "clicked", G_CALLBACK(on_button1_1_clicked), NULL);
   char* portname = "/dev/ttyUSB0";
   serial_port = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
   if (serial_port < 0)
@@ -230,7 +267,7 @@ int main (int argc, char* argv[])
   return 0;
 }
 
-void on_button1_clicked(GtkButton *button, gpointer user_data)
+void on_button1_1_clicked(GtkButton *button, gpointer user_data)
 {
   std::string login;
   const char* log = gtk_entry_get_text(GTK_ENTRY((GtkWidget*) login_entry));
@@ -249,7 +286,7 @@ void on_button1_clicked(GtkButton *button, gpointer user_data)
   else gtk_label_set_text(GTK_LABEL(pass_incorrect), "Неправильный логин/пароль!");
 }
 
-void on_button2_clicked(GtkButton *button, gpointer user_data)
+void on_button1_2_clicked(GtkButton *button, gpointer user_data)
 {
     gtk_entry_set_text(GTK_ENTRY(login_entry), "");
     gtk_entry_set_text(GTK_ENTRY(password_entry), "");
@@ -270,12 +307,30 @@ void toggle1_toggled(GtkButton *button, gpointer user_data)
     o=!o;
 }
 
-void on_button4_clicked(GtkButton *button, gpointer user_data)
+int toggle2_1_toggled(GtkButton *button, gpointer user_data)
 {
-
+  toggle2_1_on = !toggle2_1_on;
+  if (toggle_under_upgrade) return 0;
+  if ((!toggle2_1_on)&&(toggle2_2_on))
+  {
+    toggle_under_upgrade = true;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle2_2), false);
+    toggle2_2_on=false;
+    toggle_under_upgrade = false;
+  }
+  return 0;
 }
 
-void on_button5_clicked(GtkButton *button, gpointer user_data)
+int toggle2_2_toggled(GtkButton *button, gpointer user_data)
 {
-
+  toggle2_2_on = !toggle2_2_on;
+  if (toggle_under_upgrade) return 0;
+  if ((!toggle2_1_on)&&(toggle2_2_on))
+  {
+    toggle_under_upgrade = true;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle2_1), true);
+    toggle2_1_on=true;
+    toggle_under_upgrade = false;
+  }
+  return 0;
 }
