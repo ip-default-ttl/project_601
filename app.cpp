@@ -1,23 +1,44 @@
+/*
+
+  параметры конфигурации
+
+*/
+#define admin_login "admin" //логин для входа
+#define admin_password "nimda"//пароль для входа
+#define uart_port "/dev/ttyUSB0"//порт uart
+
+//стрим высокого разрешения для распознавания номеров
+#define main_stream_url "rtsp://admin:180500Kn@172.18.18.3:554/live/0/MAIN"
+
+//стрим 800*448 10FPS
+#define sub_stream_url "rtsp://admin:180500Kn@172.18.18.3:554/live/0/SUB"
+
+
+
+//графический интерфейс gtk3
 #include <gtk/gtk.h>
-#include <gtk/gtkx.h>
 #include <gdk/gdk.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
+
+//подключаем opencv
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/core/types_c.h>
+
+//просто нужные библиотеки
 #include <cstring>
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
 #include <chrono>
 
+//библиотеки для uart
 #include <termios.h>
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
 
+//теперь приложение многопоточное
 #include <thread>
 
 //виджеты первого окна
@@ -68,8 +89,8 @@ void on_button1_1_clicked(GtkButton *button, gpointer user_data);
 void on_button1_2_clicked(GtkButton *button, gpointer user_data);
 void on_button3_clicked(GtkButton *button, gpointer user_data);
 void toggle1_toggled(GtkButton *button, gpointer user_data);
-int toggle2_1_toggled(GtkButton *button, gpointer user_data);
-int toggle2_2_toggled(GtkButton *button, gpointer user_data);
+void toggle2_1_toggled(GtkButton *button, gpointer user_data);
+void toggle2_2_toggled(GtkButton *button, gpointer user_data);
 
 inline int set_interface_attribs (int fd, int speed, int parity)
 {
@@ -244,14 +265,11 @@ int main (int argc, char* argv[])
   g_signal_connect(window2, "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(toggle1, "toggled", G_CALLBACK(toggle1_toggled), NULL);
   g_signal_connect(toggle2_1, "toggled", G_CALLBACK(toggle2_1_toggled), NULL);
-  g_signal_connect(toggle2_1, "toggled", G_CALLBACK(toggle2_2_toggled), NULL);
-  //g_signal_connect(GTK_BUTTON(button5), "clicked", G_CALLBACK(on_button5_clicked), NULL);
-  //g_signal_connect(GTK_BUTTON(button4), "clicked", G_CALLBACK(on_button4_clicked), NULL);
+  g_signal_connect(toggle2_2, "toggled", G_CALLBACK(toggle2_2_toggled), NULL);
   g_signal_connect(GTK_BUTTON(button2_1), "clicked", G_CALLBACK(on_button3_clicked), NULL);
   g_signal_connect(GTK_BUTTON(button1_2), "clicked", G_CALLBACK(on_button1_2_clicked), NULL);
   g_signal_connect(GTK_BUTTON(button1_1), "clicked", G_CALLBACK(on_button1_1_clicked), NULL);
-  char* portname = "/dev/ttyUSB0";
-  serial_port = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
+  serial_port = open(uart_port, O_RDWR | O_NOCTTY | O_SYNC);
   if (serial_port < 0)
   {
     std::cout<<"Error from open:"<<errno<<std::endl<<strerror(errno)<<std::endl;
@@ -277,7 +295,7 @@ void on_button1_1_clicked(GtkButton *button, gpointer user_data)
   login.assign(log, len);
   len = gtk_entry_get_text_length(GTK_ENTRY((GtkWidget*) password_entry));
   password.assign(pas, len);
-  if ((login == "admin")&&(password=="admin"))
+  if ((login == admin_login)&&(password==admin_password))
   {
     gtk_widget_destroy(window);
     gtk_widget_show(window2);
@@ -307,30 +325,20 @@ void toggle1_toggled(GtkButton *button, gpointer user_data)
     o=!o;
 }
 
-int toggle2_1_toggled(GtkButton *button, gpointer user_data)
+void toggle2_1_toggled(GtkButton *button, gpointer user_data)
 {
   toggle2_1_on = !toggle2_1_on;
-  if (toggle_under_upgrade) return 0;
   if ((!toggle2_1_on)&&(toggle2_2_on))
   {
-    toggle_under_upgrade = true;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle2_2), false);
-    toggle2_2_on=false;
-    toggle_under_upgrade = false;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle2_2), FALSE);
   }
-  return 0;
 }
 
-int toggle2_2_toggled(GtkButton *button, gpointer user_data)
+void toggle2_2_toggled(GtkButton *button, gpointer user_data)
 {
   toggle2_2_on = !toggle2_2_on;
-  if (toggle_under_upgrade) return 0;
   if ((!toggle2_1_on)&&(toggle2_2_on))
   {
-    toggle_under_upgrade = true;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle2_1), true);
-    toggle2_1_on=true;
-    toggle_under_upgrade = false;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle2_1), TRUE);
   }
-  return 0;
 }
