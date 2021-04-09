@@ -1,6 +1,6 @@
 /*
 
-  параметры конфигурации
+параметры конфигурации
 
 */
 #define admin_login "admin" //логин для входа
@@ -14,7 +14,7 @@
 #define sub_stream_url "rtsp://admin:180500Kn@172.18.18.3:554/live/0/SUB"
 
 /*
-    библиотеки
+библиотеки
 */
 
 //подключаем gtk3
@@ -44,7 +44,7 @@
 #include <thread>
 
 /*
-    Глобальные переменные
+Глобальные переменные
 */
 
 //виджеты первого окна
@@ -80,17 +80,15 @@ GtkWidget* text2_1;
 //какая-то неведомая поебень
 GtkBuilder* builder;
 GdkPixbuf* ccc;
-//данные датчиков
-int temp;
-int vlaga;
 //служебные переменныые
 int serial_port;
 bool o=true;
 bool toggle2_1_on = false;
 bool toggle2_2_on = false;
+char* sensor_data;
 
 /*
-    прототипы функций
+прототипы функций
 */
 
 //функции кнопок
@@ -107,11 +105,13 @@ void set_blocking (int fd, int should_block);
 
 bool stream();
 void request_sensors();
+void request_data_from_sensor (char* sensor, int length);
+bool update_sensor_widget (GtkWidget* widget);
 
 inline int getRandomNumber(int min, int max)
 {
-    static const double fraction = 1.0 / (static_cast<double>(RAND_MAX) + 1.0);
-    return static_cast<int>(rand() * fraction * (max - min + 1) + min);
+  static const double fraction = 1.0 / (static_cast<double>(RAND_MAX) + 1.0);
+  return static_cast<int>(rand() * fraction * (max - min + 1) + min);
 }
 
 bool update_stream(GdkPixbuf* frame)
@@ -120,20 +120,11 @@ bool update_stream(GdkPixbuf* frame)
   return FALSE;
 }
 
-bool test_func()
-{
-
-}
-
-bool start() {
-  thread1 = g_thread_try_new("thread", GThreadFunc(stream), NULL, NULL);
-  return TRUE;
-}
-
 int main (int argc, char* argv[])
 {
   gtk_init(&argc, &argv);
   srand(time(0));
+  sensor_data = new char [50];
   builder = gtk_builder_new_from_file("app.glade");
   //окно входа
   window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
@@ -156,6 +147,7 @@ int main (int argc, char* argv[])
   button2_2 = GTK_WIDGET(gtk_builder_get_object(builder, "button2_2"));
   button2_3 = GTK_WIDGET(gtk_builder_get_object(builder, "button2_3"));
   button2_4 = GTK_WIDGET(gtk_builder_get_object(builder, "button2_4"));
+  button2_5 = GTK_WIDGET(gtk_builder_get_object(builder, "button2_5"));
 
   text2_1 = GTK_WIDGET(gtk_builder_get_object(builder, "text2_1"));
 
@@ -180,10 +172,12 @@ int main (int argc, char* argv[])
   }
   set_interface_attribs (serial_port, B9600, 0);
   set_blocking (serial_port, 0);
-  g_timeout_add_seconds (60, GSourceFunc(test_func), NULL);
+  //g_timeout_add_seconds (10, GSourceFunc(request_sensors), NULL);
   gtk_widget_show(window);
-  std::thread thread(stream);
-  thread.detach();
+  std::thread thread1(stream);
+  std::thread thread2(request_sensors);
+  thread1.detach();
+  thread2.detach();
   gtk_main();
   close(serial_port);
   return 0;
@@ -191,58 +185,58 @@ int main (int argc, char* argv[])
 
 inline int set_interface_attribs (int fd, int speed, int parity)
 {
-        struct termios tty;
-        if (tcgetattr (fd, &tty) != 0)
-        {
-                std::cout<<"error from tcgetattr"<<errno;
-                return -1;
-        }
+  struct termios tty;
+  if (tcgetattr (fd, &tty) != 0)
+  {
+    std::cout<<"error from tcgetattr"<<errno;
+    return -1;
+  }
 
-        cfsetospeed (&tty, speed);
-        cfsetispeed (&tty, speed);
+  cfsetospeed (&tty, speed);
+  cfsetispeed (&tty, speed);
 
-        tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;     // 8-bit chars
-        // disable IGNBRK for mismatched speed tests; otherwise receive break
-        // as \000 chars
-        tty.c_iflag &= ~IGNBRK;         // disable break processing
-        tty.c_lflag = 0;                // no signaling chars, no echo,
-                                        // no canonical processing
-        tty.c_oflag = 0;                // no remapping, no delays
-        tty.c_cc[VMIN]  = 0;            // read doesn't block
-        tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
+  tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;     // 8-bit chars
+  // disable IGNBRK for mismatched speed tests; otherwise receive break
+  // as \000 chars
+  tty.c_iflag &= ~IGNBRK;         // disable break processing
+  tty.c_lflag = 0;                // no signaling chars, no echo,
+  // no canonical processing
+  tty.c_oflag = 0;                // no remapping, no delays
+  tty.c_cc[VMIN]  = 0;            // read doesn't block
+  tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
 
-        tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
+  tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
 
-        tty.c_cflag |= (CLOCAL | CREAD);// ignore modem controls,
-                                        // enable reading
-        tty.c_cflag &= ~(PARENB | PARODD);      // shut off parity
-        tty.c_cflag |= parity;
-        tty.c_cflag &= ~CSTOPB;
-        tty.c_cflag &= ~CRTSCTS;
+  tty.c_cflag |= (CLOCAL | CREAD);// ignore modem controls,
+  // enable reading
+  tty.c_cflag &= ~(PARENB | PARODD);      // shut off parity
+  tty.c_cflag |= parity;
+  tty.c_cflag &= ~CSTOPB;
+  tty.c_cflag &= ~CRTSCTS;
 
-        if (tcsetattr (fd, TCSANOW, &tty) != 0)
-        {
-                std::cout<<"error from tcsetattr"<<errno<<std::endl;
-                return -1;
-        }
-        return 0;
+  if (tcsetattr (fd, TCSANOW, &tty) != 0)
+  {
+    std::cout<<"error from tcsetattr"<<errno<<std::endl;
+    return -1;
+  }
+  return 0;
 }
 
 inline void set_blocking (int fd, int should_block)
 {
-        struct termios tty;
-        memset (&tty, 0, sizeof tty);
-        if (tcgetattr (fd, &tty) != 0)
-        {
-                std::cout<<"error from tggetattr"<<errno<<std::endl;
-                return;
-        }
+  struct termios tty;
+  memset (&tty, 0, sizeof tty);
+  if (tcgetattr (fd, &tty) != 0)
+  {
+    std::cout<<"error from tggetattr"<<errno<<std::endl;
+    return;
+  }
 
-        tty.c_cc[VMIN]  = should_block ? 1 : 0;
-        tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
+  tty.c_cc[VMIN]  = should_block ? 1 : 0;
+  tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
 
-        if (tcsetattr (fd, TCSANOW, &tty) != 0)
-                std::cout<<"error setting term attributes"<<errno<<std::endl;
+  if (tcsetattr (fd, TCSANOW, &tty) != 0)
+  std::cout<<"error setting term attributes"<<errno<<std::endl;
 }
 
 void on_button1_1_clicked(GtkButton *button, gpointer user_data)
@@ -266,23 +260,22 @@ void on_button1_1_clicked(GtkButton *button, gpointer user_data)
 
 void on_button1_2_clicked(GtkButton *button, gpointer user_data)
 {
-    gtk_entry_set_text(GTK_ENTRY(login_entry), "");
-    gtk_entry_set_text(GTK_ENTRY(password_entry), "");
-    gtk_label_set_text(GTK_LABEL(pass_incorrect), "");
+  gtk_entry_set_text(GTK_ENTRY(login_entry), "");
+  gtk_entry_set_text(GTK_ENTRY(password_entry), "");
 }
 
 void on_button3_clicked (GtkButton *button, gpointer user_data)
 {
-  write (serial_port, "open", 4);
+  write (serial_port, "ser1", 4);
 }
 
 void toggle1_toggled(GtkButton *button, gpointer user_data)
 {
-    std::string msg;
-    if (o) msg="1";
-    else msg="0";
-    write (serial_port,msg.c_str() , 100);
-    o=!o;
+  std::string msg;
+  if (o) msg="1";
+  else msg="0";
+  write (serial_port,msg.c_str() , 100);
+  o=!o;
 }
 
 void toggle2_1_toggled(GtkButton *button, gpointer user_data)
@@ -312,11 +305,11 @@ bool stream()
   if (!cap.isOpened()) {std::cout<<"???";return 1;}
   cv::Mat frame;
   while (true) {
-  cap>>frame;
-  cvtColor(frame, frame, cv::COLOR_BGR2RGBA);
-  pix = gdk_pixbuf_new_from_data(frame.data, GDK_COLORSPACE_RGB, true, 8, frame.cols, frame.rows, frame.step, NULL, NULL);
-  g_idle_add(GSourceFunc(update_stream), pix);
-  usleep(9000);
+    cap>>frame;
+    cvtColor(frame, frame, cv::COLOR_BGR2RGBA);
+    pix = gdk_pixbuf_new_from_data(frame.data, GDK_COLORSPACE_RGB, true, 8, frame.cols, frame.rows, frame.step, NULL, NULL);
+    g_idle_add(GSourceFunc(update_stream), pix);
+    usleep(9000);
   }
   cap.release();
   return TRUE;
@@ -326,45 +319,92 @@ void request_sensors ()
 {
   //temp = getRandomNumber(0,30);
   //vlaga = getRandomNumber(0,100);
-  int n=0;
-  int time_start;
-  char buf[50] = "";
-  char buf2[50] = "";
-  char buf3[50] = "";
-  char buf4[50] = "";
   //echo каждые 10 сек
   //tem каждые 90 сек
   //hum каждые 30 сек
   //газ каждые 60 сек
-  write (serial_port, "tem", 3);
-  auto t1=std::chrono::high_resolution_clock::now();
-  auto t2 = std::chrono::high_resolution_clock::now();
+  auto t1 = std::chrono::high_resolution_clock::now();
+  auto t2 = t1;
+  bool update_needed = true;
+  int last_updated_interval=0;
   while (true)
   {
-    n = read (serial_port, buf, 100);
-    t2 = std::chrono::high_resolution_clock::now();
-    unsigned long long int duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
-    if (duration>2)
+    t2=std::chrono::high_resolution_clock::now();
+    int duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
+    if (duration>90)
     {
-        std::cout<<"recieve timeout!"<<std::endl;
+      t1 = std::chrono::high_resolution_clock::now();
+      t2 = t1;
+      update_needed = true;
+      last_updated_interval=0;
+      continue;
+    }
+    if (duration/10>last_updated_interval)
+    {
+      last_updated_interval++;
+      update_needed=true;
+    }
+    if (update_needed) {
+      switch (duration/10)
+      {
+        case 0:
         break;
+        case 3:
+        {
+          request_data_from_sensor("hum", 3);
+          g_idle_add(GSourceFunc(update_sensor_widget), button2_3);
+          update_needed = false;
+          break;
+        }
+        case 6:
+        {
+          request_data_from_sensor("smoke", 5);
+          g_idle_add(GSourceFunc(update_sensor_widget), button2_4);
+          update_needed = false;
+          break;
+        }
+        case 9:
+        {
+          request_data_from_sensor("tem", 3);
+          g_idle_add(GSourceFunc(update_sensor_widget), button2_2);
+          update_needed = false;
+          break;
+        }
+        default:
+        {
+          request_data_from_sensor("echo", 4);
+          g_idle_add(GSourceFunc(update_sensor_widget), button2_5);
+          update_needed = false;
+          break;
+        }
+      }
     }
   }
-  gtk_button_set_label(GTK_BUTTON((GtkWidget*) button2_2), buf);
-  n=0;
-  write (serial_port, "hum", 3);
-  t1=std::chrono::high_resolution_clock::now();
-  while (n==0)
+}
+
+void request_data_from_sensor (char* sensor, int length)
+{
+  int n = 0;
+  sensor_data = new char [50];
+  auto t1 = std::chrono::high_resolution_clock::now();
+  auto t2 = t1;
+  write (serial_port, sensor, length);
+  usleep ((7 + 25) * 100);
+  while (n<=0)
   {
-    n = read (serial_port, buf2, 100);
+    n = read (serial_port, sensor_data, 50);
     t2 = std::chrono::high_resolution_clock::now();
-    unsigned long long int duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
-    if (duration>2)
+    int duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
+    if (duration>5)
     {
-      std::cout<<"recieve timeout!"<<std::endl;
+      std::cout<<"timeout!!"<<std::endl;
       break;
     }
   }
-  gtk_button_set_label(GTK_BUTTON((GtkWidget*) button2_3), buf2);
-  return TRUE;
+}
+
+bool update_sensor_widget (GtkWidget* widget)
+{
+  gtk_button_set_label(GTK_BUTTON(widget), sensor_data);
+  return FALSE;
 }
