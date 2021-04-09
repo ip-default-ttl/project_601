@@ -13,9 +13,11 @@
 //стрим 800*448 10FPS
 #define sub_stream_url "rtsp://admin:180500Kn@172.18.18.3:554/live/0/SUB"
 
+/*
+    библиотеки
+*/
 
-
-//графический интерфейс gtk3
+//подключаем gtk3
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <glib.h>
@@ -32,7 +34,7 @@
 #include <ctime>
 #include <chrono>
 
-//библиотеки для uart
+// подключаем библиотеки для uart
 #include <termios.h>
 #include <errno.h>
 #include <unistd.h>
@@ -40,6 +42,10 @@
 
 //теперь приложение многопоточное
 #include <thread>
+
+/*
+    Глобальные переменные
+*/
 
 //виджеты первого окна
 GtkWidget* window;
@@ -80,11 +86,14 @@ int vlaga;
 //служебные переменныые
 int serial_port;
 bool o=true;
-bool toggle_under_upgrade=false;
-GThread* thread1;
 bool toggle2_1_on = false;
 bool toggle2_2_on = false;
 
+/*
+    прототипы функций
+*/
+
+//функции кнопок
 void on_button1_1_clicked(GtkButton *button, gpointer user_data);
 void on_button1_2_clicked(GtkButton *button, gpointer user_data);
 void on_button3_clicked(GtkButton *button, gpointer user_data);
@@ -92,68 +101,18 @@ void toggle1_toggled(GtkButton *button, gpointer user_data);
 void toggle2_1_toggled(GtkButton *button, gpointer user_data);
 void toggle2_2_toggled(GtkButton *button, gpointer user_data);
 
-inline int set_interface_attribs (int fd, int speed, int parity)
-{
-        struct termios tty;
-        if (tcgetattr (fd, &tty) != 0)
-        {
-                std::cout<<"error from tcgetattr"<<errno;
-                return -1;
-        }
+//функции для uart
+int set_interface_attribs (int fd, int speed, int parity);
+void set_blocking (int fd, int should_block);
 
-        cfsetospeed (&tty, speed);
-        cfsetispeed (&tty, speed);
-
-        tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;     // 8-bit chars
-        // disable IGNBRK for mismatched speed tests; otherwise receive break
-        // as \000 chars
-        tty.c_iflag &= ~IGNBRK;         // disable break processing
-        tty.c_lflag = 0;                // no signaling chars, no echo,
-                                        // no canonical processing
-        tty.c_oflag = 0;                // no remapping, no delays
-        tty.c_cc[VMIN]  = 0;            // read doesn't block
-        tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
-
-        tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
-
-        tty.c_cflag |= (CLOCAL | CREAD);// ignore modem controls,
-                                        // enable reading
-        tty.c_cflag &= ~(PARENB | PARODD);      // shut off parity
-        tty.c_cflag |= parity;
-        tty.c_cflag &= ~CSTOPB;
-        tty.c_cflag &= ~CRTSCTS;
-
-        if (tcsetattr (fd, TCSANOW, &tty) != 0)
-        {
-                std::cout<<"error from tcsetattr"<<errno<<std::endl;
-                return -1;
-        }
-        return 0;
-}
-
-inline void set_blocking (int fd, int should_block)
-{
-        struct termios tty;
-        memset (&tty, 0, sizeof tty);
-        if (tcgetattr (fd, &tty) != 0)
-        {
-                std::cout<<"error from tggetattr"<<errno<<std::endl;
-                return;
-        }
-
-        tty.c_cc[VMIN]  = should_block ? 1 : 0;
-        tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
-
-        if (tcsetattr (fd, TCSANOW, &tty) != 0)
-                std::cout<<"error setting term attributes"<<errno<<std::endl;
-}
+bool stream();
+void request_sensors();
 
 inline int getRandomNumber(int min, int max)
 {
     static const double fraction = 1.0 / (static_cast<double>(RAND_MAX) + 1.0);
     return static_cast<int>(rand() * fraction * (max - min + 1) + min);
 }
-//блять ну и язык, даже рандома без static_cast не напишешь
 
 bool update_stream(GdkPixbuf* frame)
 {
@@ -161,64 +120,9 @@ bool update_stream(GdkPixbuf* frame)
   return FALSE;
 }
 
-bool stream()
-{
-  GdkPixbuf* pix;
-  unsigned long long int a=0;
-  std::string url="rtsp://admin:180500Kn@172.18.18.3:554/live/0/SUB";
-  cv::VideoCapture cap(url);
-  if (!cap.isOpened()) {std::cout<<"???";return 1;}
-  cv::Mat frame;
-  while (true) {
-  cap>>frame;
-  cvtColor(frame, frame, cv::COLOR_BGR2RGBA);
-  pix = gdk_pixbuf_new_from_data(frame.data, GDK_COLORSPACE_RGB, true, 8, frame.cols, frame.rows, frame.step, NULL, NULL);
-  g_idle_add(GSourceFunc(update_stream), pix);
-  usleep(9000);
-  }
-  cap.release();
-  return TRUE;
-}
-
 bool test_func()
 {
-  //temp = getRandomNumber(0,30);
-  //vlaga = getRandomNumber(0,100);
-  int n=0;
-  int time_start;
-  char buf[100] = "";
-  char buf2[100] = "";
-  write (serial_port, "tem", 3);
-  auto t1=std::chrono::high_resolution_clock::now();
-  auto t2 = std::chrono::high_resolution_clock::now();
-  while (n==0)
-  {
-    n = read (serial_port, buf, 100);
-    t2 = std::chrono::high_resolution_clock::now();
-    unsigned long long int duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
-    if (duration>2)
-    {
-        std::cout<<"recieve timeout!"<<std::endl;
-        break;
-    }
-  }
-  gtk_button_set_label(GTK_BUTTON((GtkWidget*) button2_2), buf);
-  n=0;
-  write (serial_port, "hum", 3);
-  t1=std::chrono::high_resolution_clock::now();
-  while (n==0)
-  {
-    n = read (serial_port, buf2, 100);
-    t2 = std::chrono::high_resolution_clock::now();
-    unsigned long long int duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
-    if (duration>2)
-    {
-      std::cout<<"recieve timeout!"<<std::endl;
-      break;
-    }
-  }
-  gtk_button_set_label(GTK_BUTTON((GtkWidget*) button2_3), buf2);
-  return TRUE;
+
 }
 
 bool start() {
@@ -285,6 +189,62 @@ int main (int argc, char* argv[])
   return 0;
 }
 
+inline int set_interface_attribs (int fd, int speed, int parity)
+{
+        struct termios tty;
+        if (tcgetattr (fd, &tty) != 0)
+        {
+                std::cout<<"error from tcgetattr"<<errno;
+                return -1;
+        }
+
+        cfsetospeed (&tty, speed);
+        cfsetispeed (&tty, speed);
+
+        tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;     // 8-bit chars
+        // disable IGNBRK for mismatched speed tests; otherwise receive break
+        // as \000 chars
+        tty.c_iflag &= ~IGNBRK;         // disable break processing
+        tty.c_lflag = 0;                // no signaling chars, no echo,
+                                        // no canonical processing
+        tty.c_oflag = 0;                // no remapping, no delays
+        tty.c_cc[VMIN]  = 0;            // read doesn't block
+        tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
+
+        tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
+
+        tty.c_cflag |= (CLOCAL | CREAD);// ignore modem controls,
+                                        // enable reading
+        tty.c_cflag &= ~(PARENB | PARODD);      // shut off parity
+        tty.c_cflag |= parity;
+        tty.c_cflag &= ~CSTOPB;
+        tty.c_cflag &= ~CRTSCTS;
+
+        if (tcsetattr (fd, TCSANOW, &tty) != 0)
+        {
+                std::cout<<"error from tcsetattr"<<errno<<std::endl;
+                return -1;
+        }
+        return 0;
+}
+
+inline void set_blocking (int fd, int should_block)
+{
+        struct termios tty;
+        memset (&tty, 0, sizeof tty);
+        if (tcgetattr (fd, &tty) != 0)
+        {
+                std::cout<<"error from tggetattr"<<errno<<std::endl;
+                return;
+        }
+
+        tty.c_cc[VMIN]  = should_block ? 1 : 0;
+        tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
+
+        if (tcsetattr (fd, TCSANOW, &tty) != 0)
+                std::cout<<"error setting term attributes"<<errno<<std::endl;
+}
+
 void on_button1_1_clicked(GtkButton *button, gpointer user_data)
 {
   std::string login;
@@ -341,4 +301,70 @@ void toggle2_2_toggled(GtkButton *button, gpointer user_data)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle2_1), TRUE);
   }
+}
+
+bool stream()
+{
+  GdkPixbuf* pix;
+  unsigned long long int a=0;
+  std::string url="rtsp://admin:180500Kn@172.18.18.3:554/live/0/SUB";
+  cv::VideoCapture cap(url);
+  if (!cap.isOpened()) {std::cout<<"???";return 1;}
+  cv::Mat frame;
+  while (true) {
+  cap>>frame;
+  cvtColor(frame, frame, cv::COLOR_BGR2RGBA);
+  pix = gdk_pixbuf_new_from_data(frame.data, GDK_COLORSPACE_RGB, true, 8, frame.cols, frame.rows, frame.step, NULL, NULL);
+  g_idle_add(GSourceFunc(update_stream), pix);
+  usleep(9000);
+  }
+  cap.release();
+  return TRUE;
+}
+
+void request_sensors ()
+{
+  //temp = getRandomNumber(0,30);
+  //vlaga = getRandomNumber(0,100);
+  int n=0;
+  int time_start;
+  char buf[50] = "";
+  char buf2[50] = "";
+  char buf3[50] = "";
+  char buf4[50] = "";
+  //echo каждые 10 сек
+  //tem каждые 90 сек
+  //hum каждые 30 сек
+  //газ каждые 60 сек
+  write (serial_port, "tem", 3);
+  auto t1=std::chrono::high_resolution_clock::now();
+  auto t2 = std::chrono::high_resolution_clock::now();
+  while (true)
+  {
+    n = read (serial_port, buf, 100);
+    t2 = std::chrono::high_resolution_clock::now();
+    unsigned long long int duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
+    if (duration>2)
+    {
+        std::cout<<"recieve timeout!"<<std::endl;
+        break;
+    }
+  }
+  gtk_button_set_label(GTK_BUTTON((GtkWidget*) button2_2), buf);
+  n=0;
+  write (serial_port, "hum", 3);
+  t1=std::chrono::high_resolution_clock::now();
+  while (n==0)
+  {
+    n = read (serial_port, buf2, 100);
+    t2 = std::chrono::high_resolution_clock::now();
+    unsigned long long int duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
+    if (duration>2)
+    {
+      std::cout<<"recieve timeout!"<<std::endl;
+      break;
+    }
+  }
+  gtk_button_set_label(GTK_BUTTON((GtkWidget*) button2_3), buf2);
+  return TRUE;
 }
