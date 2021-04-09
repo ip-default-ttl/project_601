@@ -339,12 +339,12 @@ void request_sensors ()
       last_updated_interval=0;
       continue;
     }
-    if (duration/10>last_updated_interval)
+    if (duration/10>last_updated_interval) //ебздец тут костыль
     {
       last_updated_interval++;
       update_needed=true;
     }
-    if (update_needed) {
+    if (update_needed) { //хуйня ебанистическая получилась в итоге
       switch (duration/10)
       {
         case 0:
@@ -373,14 +373,14 @@ void request_sensors ()
         default:
         {
           request_data_from_sensor("echo", 4);
-          g_idle_add(GSourceFunc(update_sensor_widget), button2_5);
+          g_idle_add(GSourceFunc(update_sensor_widget), button2_5); //gtk suka zaebal
           update_needed = false;
           break;
         }
       }
     }
   }
-}
+} //я в ахуе, но она бля работает
 
 void request_data_from_sensor (char* sensor, int length)
 {
@@ -403,7 +403,7 @@ void request_data_from_sensor (char* sensor, int length)
   }
 }
 
-bool update_sensor_widget (GtkWidget* widget)
+bool update_sensor_widget (GtkWidget* widget) //gtk иди в пизду со своей ошибкой сегментации
 {
   gtk_button_set_label(GTK_BUTTON(widget), sensor_data);
   return FALSE;
