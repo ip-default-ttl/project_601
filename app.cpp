@@ -42,6 +42,7 @@
 
 //теперь приложение многопоточное
 #include <thread>
+#include <mutex>
 
 /*
 Глобальные переменные
@@ -86,7 +87,9 @@ bool o=true;
 bool toggle2_1_on = false;
 bool toggle2_2_on = false;
 char* sensor_data;
-
+bool other_uart_pending = false;
+std::string other_uart_command;
+std::mutex mutex1;
 /*
 прототипы функций
 */
@@ -105,8 +108,10 @@ void set_blocking (int fd, int should_block);
 
 bool stream();
 void request_sensors();
+void plates_detection();
 void request_data_from_sensor (char* sensor, int length);
 bool update_sensor_widget (GtkWidget* widget);
+void other_uart_request();
 
 inline int getRandomNumber(int min, int max)
 {
@@ -173,11 +178,16 @@ int main (int argc, char* argv[])
   set_interface_attribs (serial_port, B9600, 0);
   set_blocking (serial_port, 0);
   //g_timeout_add_seconds (10, GSourceFunc(request_sensors), NULL);
-  gtk_widget_show(window);
+
   std::thread thread1(stream);
   std::thread thread2(request_sensors);
-  thread1.detach();
-  thread2.detach();
+  //std::thread thread3(plates_detection);
+  std::thread thread4(other_uart_request);
+  thread1.join();
+  thread2.join();
+  //thread3.join();
+  thread4.join();
+  gtk_widget_show(window);
   gtk_main();
   close(serial_port);
   return 0;
@@ -266,9 +276,27 @@ void on_button1_2_clicked(GtkButton *button, gpointer user_data)
 
 void on_button3_clicked (GtkButton *button, gpointer user_data)
 {
-  write (serial_port, "ser1", 4);
+  mutex1.lock();
+  other_uart_command = "ser1";
+  other_uart_pending = true;
+  mutex1.unlock();
 }
 
+void other_uart_request()
+{
+  while (true)
+  {
+    if(other_uart_pending)
+    {
+      sleep(5);
+      mutex1.lock();
+      write(serial_port, other_uart_command.c_str(), other_uart_command.length());
+      sleep(5);
+      other_uart_pending = false;
+      mutex1.unlock();
+    }
+  }
+}
 void toggle1_toggled(GtkButton *button, gpointer user_data)
 {
   std::string msg;
@@ -317,8 +345,6 @@ bool stream()
 
 void request_sensors ()
 {
-  //temp = getRandomNumber(0,30);
-  //vlaga = getRandomNumber(0,100);
   //echo каждые 10 сек
   //tem каждые 90 сек
   //hum каждые 30 сек
@@ -329,55 +355,63 @@ void request_sensors ()
   int last_updated_interval=0;
   while (true)
   {
-    t2=std::chrono::high_resolution_clock::now();
-    int duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
-    if (duration>90)
+    if (!other_uart_pending) {
+      t2=std::chrono::high_resolution_clock::now();
+      int duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
+      if (duration>90)
+      {
+        t1 = std::chrono::high_resolution_clock::now();
+        t2 = t1;
+        update_needed = true;
+        last_updated_interval=0;
+        continue;
+      }
+      if (duration/10>last_updated_interval) //ебздец тут костыль
+      {
+        last_updated_interval++;
+        update_needed=true;
+      }
+      if (update_needed) { //хуйня ебанистическая получилась в итоге
+        switch (duration/10)
+        {
+          case 0:
+          break;
+          case 3:
+          {
+            request_data_from_sensor("hum", 3);
+            g_idle_add(GSourceFunc(update_sensor_widget), button2_3);
+            update_needed = false;
+            break;
+          }
+          case 6:
+          {
+            request_data_from_sensor("smoke", 5);
+            g_idle_add(GSourceFunc(update_sensor_widget), button2_4);
+            update_needed = false;
+            break;
+          }
+          case 9:
+          {
+            request_data_from_sensor("tem", 3);
+            g_idle_add(GSourceFunc(update_sensor_widget), button2_2);
+            update_needed = false;
+            break;
+          }
+          default:
+          {
+            request_data_from_sensor("echo", 4);
+            g_idle_add(GSourceFunc(update_sensor_widget), button2_5); //gtk suka zaebal
+            update_needed = false;
+            break;
+          }
+        }
+      }
+    }
+    else
     {
       t1 = std::chrono::high_resolution_clock::now();
       t2 = t1;
-      update_needed = true;
-      last_updated_interval=0;
-      continue;
-    }
-    if (duration/10>last_updated_interval) //ебздец тут костыль
-    {
-      last_updated_interval++;
-      update_needed=true;
-    }
-    if (update_needed) { //хуйня ебанистическая получилась в итоге
-      switch (duration/10)
-      {
-        case 0:
-        break;
-        case 3:
-        {
-          request_data_from_sensor("hum", 3);
-          g_idle_add(GSourceFunc(update_sensor_widget), button2_3);
-          update_needed = false;
-          break;
-        }
-        case 6:
-        {
-          request_data_from_sensor("smoke", 5);
-          g_idle_add(GSourceFunc(update_sensor_widget), button2_4);
-          update_needed = false;
-          break;
-        }
-        case 9:
-        {
-          request_data_from_sensor("tem", 3);
-          g_idle_add(GSourceFunc(update_sensor_widget), button2_2);
-          update_needed = false;
-          break;
-        }
-        default:
-        {
-          request_data_from_sensor("echo", 4);
-          g_idle_add(GSourceFunc(update_sensor_widget), button2_5); //gtk suka zaebal
-          update_needed = false;
-          break;
-        }
-      }
+      sleep(15);
     }
   }
 } //я в ахуе, но она бля работает
@@ -408,3 +442,11 @@ bool update_sensor_widget (GtkWidget* widget) //gtk иди в пизду со с
   gtk_button_set_label(GTK_BUTTON(widget), sensor_data);
   return FALSE;
 }
+
+// void plates_detection()
+// {
+//   while (true)
+//   {
+//     int i=0;
+//   }
+// }

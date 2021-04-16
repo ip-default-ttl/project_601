@@ -2,6 +2,247 @@
 <!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
+  <object class="GtkWindow" id="main_window">
+    <property name="can_focus">False</property>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <object class="GtkFixed" id="fixed2">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <child>
+          <object class="GtkButton" id="button2_1">
+            <property name="label" translatable="yes">Открыть шлакбаум</property>
+            <property name="width_request">800</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+          </object>
+          <packing>
+            <property name="x">220</property>
+            <property name="y">460</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="toggle1">
+            <property name="label" translatable="yes">togglebutton</property>
+            <property name="width_request">114</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <signal name="toggled" handler="toggle1_toggled" swapped="no"/>
+          </object>
+          <packing>
+            <property name="x">41</property>
+            <property name="y">398</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button2_2">
+            <property name="label" translatable="yes">Температура: нет данных</property>
+            <property name="width_request">220</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Нажмите, чтобы запросить данные</property>
+            <signal name="clicked" handler="on_button4_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="y">120</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button2_3">
+            <property name="label" translatable="yes">Влажность: нет данных</property>
+            <property name="width_request">220</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Нажмите, чтобы запросить данные</property>
+          </object>
+          <packing>
+            <property name="y">40</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button2_4">
+            <property name="label" translatable="yes">Дым: нет данных</property>
+            <property name="name">button2_4</property>
+            <property name="width_request">220</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+          </object>
+          <packing>
+            <property name="y">200</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage" id="video1">
+            <property name="width_request">800</property>
+            <property name="height_request">448</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="stock">gtk-missing-image</property>
+          </object>
+          <packing>
+            <property name="x">220</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button2_5">
+            <property name="label" translatable="yes">Расстояние: нет данных</property>
+            <property name="width_request">220</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+          </object>
+          <packing>
+            <property name="y">280</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="toggle2_1">
+            <property name="label" translatable="yes">Распознавание номеров</property>
+            <property name="width_request">220</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+          </object>
+          <packing>
+            <property name="x">1020</property>
+            <property name="y">120</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="toggle2_2">
+            <property name="label" translatable="yes">Открывать автоматически</property>
+            <property name="width_request">220</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+          </object>
+          <packing>
+            <property name="x">1020</property>
+            <property name="y">200</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage" id="photo">
+            <property name="width_request">300</property>
+            <property name="height_request">400</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">Vladimir-Lenin-300x400.jpg</property>
+          </object>
+          <packing>
+            <property name="x">930</property>
+            <property name="y">560</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="entry2_1">
+            <property name="width_request">100</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </object>
+          <packing>
+            <property name="x">640</property>
+            <property name="y">600</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button2_6">
+            <property name="label" translatable="yes">Выполнить</property>
+            <property name="width_request">100</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+          </object>
+          <packing>
+            <property name="x">810</property>
+            <property name="y">575</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage" id="frame2_1">
+            <property name="width_request">320</property>
+            <property name="height_request">420</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">Images/frame.png</property>
+          </object>
+          <packing>
+            <property name="x">920</property>
+            <property name="y">550</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="width_request">110</property>
+            <property name="height_request">15</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">ручной запрос</property>
+          </object>
+          <packing>
+            <property name="x">670</property>
+            <property name="y">580</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTextView" id="text2_1">
+            <property name="width_request">180</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="cursor_visible">False</property>
+          </object>
+          <packing>
+            <property name="x">725</property>
+            <property name="y">665</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage" id="frame2_2">
+            <property name="width_request">300</property>
+            <property name="height_request">315</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">Images/frame2_2.png</property>
+          </object>
+          <packing>
+            <property name="x">615</property>
+            <property name="y">655</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTextView">
+            <property name="width_request">180</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </object>
+          <packing>
+            <property name="x">725</property>
+            <property name="y">700</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">project_601</property>
@@ -17,10 +258,10 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
-          <object class="GtkButton" id="button1">
+          <object class="GtkButton" id="button1_1">
             <property name="label" translatable="yes">войти</property>
             <property name="name">button1</property>
-            <property name="width_request">50</property>
+            <property name="width_request">135</property>
             <property name="height_request">30</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -72,10 +313,10 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="button2">
+          <object class="GtkButton" id="button1_2">
             <property name="label" translatable="yes">очистить</property>
             <property name="name">button2</property>
-            <property name="width_request">90</property>
+            <property name="width_request">135</property>
             <property name="height_request">30</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -86,8 +327,8 @@
             <property name="margin_bottom">5</property>
           </object>
           <packing>
-            <property name="x">90</property>
-            <property name="y">71</property>
+            <property name="x">155</property>
+            <property name="y">70</property>
           </packing>
         </child>
         <child>
@@ -100,154 +341,6 @@
           <packing>
             <property name="x">9</property>
             <property name="y">105</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSwitch">
-            <property name="width_request">54</property>
-            <property name="height_request">36</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-          </object>
-          <packing>
-            <property name="x">68</property>
-            <property name="y">133</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="width_request">70</property>
-            <property name="height_request">32</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Автомат</property>
-          </object>
-          <packing>
-            <property name="x">113</property>
-            <property name="y">136</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="width_request">64</property>
-            <property name="height_request">37</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Ручной</property>
-          </object>
-          <packing>
-            <property name="x">10</property>
-            <property name="y">131</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkToggleButton">
-            <property name="label" translatable="yes">Полный 
-автомат</property>
-            <property name="width_request">100</property>
-            <property name="height_request">80</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-          </object>
-          <packing>
-            <property name="x">188</property>
-            <property name="y">80</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-  </object>
-  <object class="GtkWindow" id="window2">
-    <property name="can_focus">False</property>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <object class="GtkFixed" id="fixed2">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <child>
-          <object class="GtkButton" id="button3">
-            <property name="label" translatable="yes">Открыть
-шлакбаум</property>
-            <property name="width_request">123</property>
-            <property name="height_request">448</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-          </object>
-          <packing>
-            <property name="x">227</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkToggleButton" id="toggle1">
-            <property name="label" translatable="yes">togglebutton</property>
-            <property name="width_request">114</property>
-            <property name="height_request">80</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <signal name="toggled" handler="toggle1_toggled" swapped="no"/>
-          </object>
-          <packing>
-            <property name="y">207</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="button4">
-            <property name="label" translatable="yes">Температура: нет данных</property>
-            <property name="width_request">220</property>
-            <property name="height_request">80</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Нажмите, чтобы запросить данные</property>
-            <signal name="clicked" handler="on_button4_clicked" swapped="no"/>
-          </object>
-          <packing>
-            <property name="y">119</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="button5">
-            <property name="label" translatable="yes">Влажность: нет данных</property>
-            <property name="width_request">220</property>
-            <property name="height_request">80</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Нажмите, чтобы запросить данные</property>
-          </object>
-          <packing>
-            <property name="y">39</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="button6">
-            <property name="label" translatable="yes">Тут должна быть
-еще одна </property>
-            <property name="width_request">110</property>
-            <property name="height_request">80</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-          </object>
-          <packing>
-            <property name="x">6</property>
-            <property name="y">292</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkImage" id="video">
-            <property name="width_request">960</property>
-            <property name="height_request">800</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="stock">gtk-cdrom</property>
-          </object>
-          <packing>
-            <property name="x">350</property>
           </packing>
         </child>
       </object>
