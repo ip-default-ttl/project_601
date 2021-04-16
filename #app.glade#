@@ -203,7 +203,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkTextView" id="text2_1">
+          <object class="GtkTextView" id="text_number">
             <property name="width_request">180</property>
             <property name="height_request">30</property>
             <property name="visible">True</property>
@@ -230,7 +230,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkTextView">
+          <object class="GtkTextView" id="text_familia">
             <property name="width_request">180</property>
             <property name="height_request">30</property>
             <property name="visible">True</property>
@@ -239,6 +239,34 @@
           <packing>
             <property name="x">725</property>
             <property name="y">700</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTextView" id="text_imya">
+            <property name="width_request">180</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="cursor_visible">False</property>
+          </object>
+          <packing>
+            <property name="x">725</property>
+            <property name="y">735</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTextView" id="text_otchestvo">
+            <property name="width_request">180</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="cursor_visible">False</property>
+          </object>
+          <packing>
+            <property name="x">725</property>
+            <property name="y">770</property>
           </packing>
         </child>
       </object>

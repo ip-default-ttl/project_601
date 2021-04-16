@@ -24,9 +24,9 @@ using namespace std;
 int main()
 {
   tesseract::TessBaseAPI* OCR = new tesseract::TessBaseAPI();
-  OCR->Init(NULL, "eng");
-  OCR->SetVariable("tessedit_char_whitelist","abekmhopctyxABEKMHOPCTYX01234567890");
-
+  OCR[0].Init(NULL, "eng");
+  OCR[0].SetVariable("tessedit_char_whitelist","abekmhopctyxABEKMHOPCTYX0123456789");
+  OCR[0].SetVariable("user_defined_dpi", "100");
 //  while (true)
   //{
     //cap>>source_img;
@@ -68,8 +68,8 @@ int main()
   //Canny(cropped,cropped,30,70,7);
   imshow("aa", cropped);
   Pix* pix = pixRead("tess.jpg");
-  OCR->SetImage(pix);
-  cout<<OCR->GetUTF8Text();
+  OCR[0].SetImage(pix);
+  cout<<OCR[0].GetUTF8Text();
   }
   //imshow("aaaa", cropped);
   imshow("Result", source_img);

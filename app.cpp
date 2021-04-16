@@ -24,13 +24,15 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
+#include <opencv2/objdetect/objdetect.hpp>
+#include <opencv2/core/core.hpp>
 //просто нужные библиотеки
 #include <cstring>
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
 #include <chrono>
+#include <fstream>
 
 // подключаем библиотеки для uart
 #include <termios.h>
@@ -41,6 +43,9 @@
 //теперь приложение многопоточное
 #include <thread>
 
+//including tesseract
+#include <tesseract/baseapi.h>
+#include <leptonica/allheaders.h>
 /*
 Глобальные переменные
 */
@@ -118,11 +123,62 @@ bool update_stream(GdkPixbuf* frame)
   return FALSE;
 }
 
+struct record
+{
+  std::string nomer;
+  std::string familia;
+  std::string imya;
+  std::string otchestvo;
+};
+
+class database
+{
+public:
+  record* data;
+  unsigned int length;
+  void parse (std::string name)
+  {
+    std::fstream fin;
+    fin.open(name);
+    std::string line;
+    fin >> line;
+    length = stoi(line);
+    data = new record [length];
+    fin >> line;
+    int pos;
+    for (unsigned int i = 0; i<length; i++) {
+      fin >> line;
+      pos = line.find(";");
+      data[i].nomer=line.substr(0,pos);
+      line.erase(0,pos+1);
+      pos = line.find(";");
+      data[i].familia=line.substr(0,pos);
+      line.erase(0,pos+1);
+      pos = line.find(";");
+      data[i].imya=line.substr(0,pos);
+      line.erase(0,pos+1);
+      pos = line.find(";");
+      data[i].otchestvo=line.substr(0,pos);
+      line.erase(0,pos+1);
+    }
+    fin.close();
+  }
+  void search (std::string text)
+  {
+    for (unsigned long long int i = 0; i<length; i++)
+    {
+      if (data[i].nomer==text) std::cout<<data[i].familia<<'\n';
+    }
+  }
+};
+
 int main (int argc, char* argv[])
 {
   gtk_init(&argc, &argv);
   srand(time(0));
   sensor_data = new char [50];
+  database dbase;
+  dbase.parse("database.csv");
   builder = gtk_builder_new_from_file("app.glade");
   //окно входа
   window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
@@ -384,6 +440,10 @@ void request_data_from_sensor (char* sensor, int length)
 {
   int n = 0;
   sensor_data = new char [50];
+  for (int i=0; i<50; i++)
+  {
+    sensor_data[i]='\0';
+  }
   auto t1 = std::chrono::high_resolution_clock::now();
   auto t2 = t1;
   write (serial_port, sensor, length);
