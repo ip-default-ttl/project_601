@@ -1,2 +1,2 @@
-g++ main.cpp -o testoutput -std=c++11 `pkg-config --cflags --libs opencv4 tesseract lept`
+g++ opencv.cpp -std=c++11 `pkg-config --cflags --libs opencv4 tesseract lept`
 g++ app.cpp `pkg-config --cflags --libs gtkmm-3.0`
