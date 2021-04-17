@@ -73,6 +73,8 @@ GtkWidget* button2_4;
 GtkWidget* button2_5;
 GtkWidget* button2_6;
 
+GtkWidget* entry2_1;
+
 GtkWidget* toggle1;
 GtkWidget* toggle2_1;
 GtkWidget* toggle2_2;
@@ -81,6 +83,10 @@ GtkWidget* video1;
 GtkWidget* photo;
 
 GtkWidget* text2_1;
+GtkWidget* text_number;
+GtkWidget* text_familia;
+GtkWidget* text_imya;
+GtkWidget* text_otchestvo;
 //какая-то неведомая поебень
 GtkBuilder* builder;
 GdkPixbuf* ccc;
@@ -101,6 +107,7 @@ tesseract::TessBaseAPI* OCR;
 void on_button1_1_clicked(GtkButton *button, gpointer user_data);
 void on_button1_2_clicked(GtkButton *button, gpointer user_data);
 void on_button3_clicked(GtkButton *button, gpointer user_data);
+void on_button26_clicked(GtkButton *button, gpointer user_data);
 void toggle1_toggled(GtkButton *button, gpointer user_data);
 void toggle2_1_toggled(GtkButton *button, gpointer user_data);
 void toggle2_2_toggled(GtkButton *button, gpointer user_data);
@@ -164,24 +171,28 @@ public:
       pos = line.find(";");
       data[i].otchestvo=line.substr(0,pos);
       line.erase(0,pos+1);
+      cout<<data[i].nomer<<'\n';
     }
     fin.close();
   }
-  void search (std::string text)
+  record search (std::string text)
   {
     for (unsigned long long int i = 0; i<length; i++)
     {
-      if (data[i].nomer==text) std::cout<<data[i].familia<<'\n';
+      if (data[i].nomer==text) return data[i];
     }
   }
 };
+
+database dbase;
+void draw_responsed_data ();
+record wtf;
 
 int main (int argc, char* argv[])
 {
   gtk_init(&argc, &argv);
   srand(time(0));
   sensor_data = new char [50];
-  database dbase;
   dbase.parse("database.csv");
   OCR = new tesseract::TessBaseAPI();
   OCR[0].Init(NULL, "eng");
@@ -210,14 +221,22 @@ int main (int argc, char* argv[])
   button2_3 = GTK_WIDGET(gtk_builder_get_object(builder, "button2_3"));
   button2_4 = GTK_WIDGET(gtk_builder_get_object(builder, "button2_4"));
   button2_5 = GTK_WIDGET(gtk_builder_get_object(builder, "button2_5"));
+  button2_6 = GTK_WIDGET(gtk_builder_get_object(builder, "button2_6"));
 
   text2_1 = GTK_WIDGET(gtk_builder_get_object(builder, "text2_1"));
+  text_number = GTK_WIDGET(gtk_builder_get_object(builder, "text_number"));
+  text_familia = GTK_WIDGET(gtk_builder_get_object(builder, "text_familia"));
+  text_imya = GTK_WIDGET(gtk_builder_get_object(builder, "text_imya"));
+  text_otchestvo = GTK_WIDGET(gtk_builder_get_object(builder, "text_otchestvo"));
+
+  entry2_1 = GTK_WIDGET(gtk_builder_get_object(builder, "entry2_1"));
 
   toggle1 = GTK_WIDGET(gtk_builder_get_object(builder, "toggle1"));
   toggle2_1 = GTK_WIDGET(gtk_builder_get_object(builder, "toggle2_1"));
   toggle2_2 = GTK_WIDGET(gtk_builder_get_object(builder, "toggle2_2"));
 
   video1 = GTK_WIDGET(gtk_builder_get_object(builder, "video1"));
+  photo = GTK_WIDGET(gtk_builder_get_object(builder, "video1"));
   //подсоединяем функции кнопок
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(window2, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -225,6 +244,7 @@ int main (int argc, char* argv[])
   g_signal_connect(toggle2_1, "toggled", G_CALLBACK(toggle2_1_toggled), NULL);
   g_signal_connect(toggle2_2, "toggled", G_CALLBACK(toggle2_2_toggled), NULL);
   g_signal_connect(GTK_BUTTON(button2_1), "clicked", G_CALLBACK(on_button3_clicked), NULL);
+  g_signal_connect(GTK_BUTTON(button2_6), "clicked", G_CALLBACK(on_button26_clicked), NULL);
   g_signal_connect(GTK_BUTTON(button1_2), "clicked", G_CALLBACK(on_button1_2_clicked), NULL);
   g_signal_connect(GTK_BUTTON(button1_1), "clicked", G_CALLBACK(on_button1_1_clicked), NULL);
   serial_port = open(uart_port, O_RDWR | O_NOCTTY | O_SYNC);
@@ -477,6 +497,7 @@ bool update_sensor_widget (GtkWidget* widget) //gtk иди в пизду со с
 
 void recognizer()
 {
+  sleep(20);
   cv::Mat source_img=cv::imread("test.png");
   cv::Mat gray;
   cv::CascadeClassifier cascadePlate;
@@ -499,7 +520,32 @@ void recognizer()
   Pix* pix = pixRead("tess.jpg");
   OCR[0].SetImage(pix);
   std::string ab = OCR[0].GetUTF8Text();
-  std::cout<<ab<<'\n';
+  for (int i=0;i<ab.size();i++)
+  {
+      ab[i]=toupper(ab[i]);
+  }
+  wtf = dbase.search(ab);
+  std::cout<<wtf.nomer<<'\n';
+  //g_idle_add(GSourceFunc(draw_responsed_data), NULL);
   }
   plate.clear();
+}
+
+void draw_responsed_data ()
+{
+  gtk_entry_set_text(GTK_ENTRY(text_number), wtf.nomer.c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_familia), wtf.familia.c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_imya), wtf.imya.c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_otchestvo), wtf.otchestvo.c_str());
+}
+
+void on_button26_clicked(GtkButton *button, gpointer user_data)
+{
+  std::string search_number = std::string(gtk_entry_get_text(GTK_ENTRY(entry2_1)));
+  record current;
+  current = dbase.search(search_number);
+  gtk_entry_set_text(GTK_ENTRY(text_number), current.nomer.c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_familia), current.familia.c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_imya), current.imya.c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_otchestvo), current.otchestvo.c_str());
 }

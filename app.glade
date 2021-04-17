@@ -203,20 +203,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkTextView" id="text2_1">
-            <property name="width_request">180</property>
-            <property name="height_request">30</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="editable">False</property>
-            <property name="cursor_visible">False</property>
-          </object>
-          <packing>
-            <property name="x">725</property>
-            <property name="y">665</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkImage" id="frame2_2">
             <property name="width_request">300</property>
             <property name="height_request">315</property>
@@ -230,7 +216,21 @@
           </packing>
         </child>
         <child>
-          <object class="GtkTextView">
+          <object class="GtkEntry" id="text_number">
+            <property name="name">text_number</property>
+            <property name="width_request">180</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+          </object>
+          <packing>
+            <property name="x">725</property>
+            <property name="y">665</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="text_familia">
             <property name="width_request">180</property>
             <property name="height_request">30</property>
             <property name="visible">True</property>
@@ -239,6 +239,30 @@
           <packing>
             <property name="x">725</property>
             <property name="y">700</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="text_imya">
+            <property name="width_request">180</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </object>
+          <packing>
+            <property name="x">725</property>
+            <property name="y">735</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="text_otchestvo">
+            <property name="width_request">180</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </object>
+          <packing>
+            <property name="x">725</property>
+            <property name="y">770</property>
           </packing>
         </child>
       </object>
