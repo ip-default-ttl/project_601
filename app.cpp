@@ -33,6 +33,7 @@
 #include <ctime>
 #include <chrono>
 #include <fstream>
+#include <vector>
 
 // подключаем библиотеки для uart
 #include <termios.h>
@@ -90,6 +91,8 @@ bool toggle2_1_on = false;
 bool toggle2_2_on = false;
 char* sensor_data;
 
+tesseract::TessBaseAPI* OCR;
+
 /*
 прототипы функций
 */
@@ -108,6 +111,7 @@ void set_blocking (int fd, int should_block);
 
 bool stream();
 void request_sensors();
+void recognizer();
 void request_data_from_sensor (char* sensor, int length);
 bool update_sensor_widget (GtkWidget* widget);
 
@@ -179,6 +183,10 @@ int main (int argc, char* argv[])
   sensor_data = new char [50];
   database dbase;
   dbase.parse("database.csv");
+  OCR = new tesseract::TessBaseAPI();
+  OCR[0].Init(NULL, "eng");
+  OCR[0].SetVariable("tessedit_char_whitelist","abekmhopctyxABEKMHOPCTYX0123456789");
+  OCR[0].SetVariable("user_defined_dpi", "100");
   builder = gtk_builder_new_from_file("app.glade");
   //окно входа
   window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
@@ -230,8 +238,10 @@ int main (int argc, char* argv[])
   gtk_widget_show(window);
   std::thread thread1(stream);
   std::thread thread2(request_sensors);
+  std::thread thread3(recognizer);
   thread1.detach();
   thread2.detach();
+  thread3.detach();
   gtk_main();
   close(serial_port);
   return 0;
@@ -371,8 +381,6 @@ bool stream()
 
 void request_sensors ()
 {
-  //temp = getRandomNumber(0,30);
-  //vlaga = getRandomNumber(0,100);
   //echo каждые 10 сек
   //tem каждые 90 сек
   //hum каждые 30 сек
@@ -465,4 +473,33 @@ bool update_sensor_widget (GtkWidget* widget) //gtk иди в пизду со с
 {
   gtk_button_set_label(GTK_BUTTON(widget), sensor_data);
   return FALSE;
+}
+
+void recognizer()
+{
+  cv::Mat source_img=cv::imread("test.png");
+  cv::Mat gray;
+  cv::CascadeClassifier cascadePlate;
+  cascadePlate.load("haarcascade_russian_plate_number.xml");
+  cv::cvtColor(source_img, gray, cv::COLOR_BGR2GRAY);
+  cv::threshold(gray, gray, 0, 255, cv::THRESH_OTSU|cv::THRESH_BINARY);
+  std::vector<cv::Rect> plate;
+  cascadePlate.detectMultiScale(gray, plate);
+  cv::Point rbeg;
+  cv::Point rend;
+  cv::Mat cropped;
+  for (auto& i:plate)
+  {
+  rbeg = cv::Point(i.x, i.y);
+  rend = cv::Point(i.x+i.width, i.y+i.height);
+//  cv::rectangle(source_img, rbeg, rend, Scalar(1,255,1), 2);
+  cv::Mat ROI(source_img, cv::Rect(i.x, i.y,i.width, i.height));
+  ROI.copyTo(cropped);
+  cv::imwrite("tess.jpg", cropped);
+  Pix* pix = pixRead("tess.jpg");
+  OCR[0].SetImage(pix);
+  std::string ab = OCR[0].GetUTF8Text();
+  std::cout<<ab<<'\n';
+  }
+  plate.clear();
 }
