@@ -158,7 +158,7 @@
             <property name="can_focus">True</property>
           </object>
           <packing>
-            <property name="x">640</property>
+            <property name="x">620</property>
             <property name="y">600</property>
           </packing>
         </child>
@@ -172,7 +172,7 @@
             <property name="receives_default">True</property>
           </object>
           <packing>
-            <property name="x">810</property>
+            <property name="x">790</property>
             <property name="y">575</property>
           </packing>
         </child>
@@ -198,22 +198,8 @@
             <property name="label" translatable="yes">ручной запрос</property>
           </object>
           <packing>
-            <property name="x">670</property>
+            <property name="x">650</property>
             <property name="y">580</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkTextView" id="text2_1">
-            <property name="width_request">180</property>
-            <property name="height_request">30</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="editable">False</property>
-            <property name="cursor_visible">False</property>
-          </object>
-          <packing>
-            <property name="x">725</property>
-            <property name="y">665</property>
           </packing>
         </child>
         <child>
@@ -230,15 +216,116 @@
           </packing>
         </child>
         <child>
-          <object class="GtkTextView">
-            <property name="width_request">180</property>
+          <object class="GtkEntry" id="text_number">
+            <property name="name">text_number</property>
+            <property name="width_request">280</property>
             <property name="height_request">30</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="text" translatable="yes">Номер:</property>
           </object>
           <packing>
-            <property name="x">725</property>
-            <property name="y">700</property>
+            <property name="x">625</property>
+            <property name="y">665</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="text_familia">
+            <property name="width_request">280</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="text" translatable="yes">Фамилия:</property>
+          </object>
+          <packing>
+            <property name="x">625</property>
+            <property name="y">702</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="text_imya">
+            <property name="width_request">280</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="text" translatable="yes">Имя:</property>
+          </object>
+          <packing>
+            <property name="x">625</property>
+            <property name="y">739</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="text_otchestvo">
+            <property name="width_request">280</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="text" translatable="yes">Отчество:</property>
+          </object>
+          <packing>
+            <property name="x">625</property>
+            <property name="y">776</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="text_dolzhnost">
+            <property name="width_request">280</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="text" translatable="yes">Должность:</property>
+          </object>
+          <packing>
+            <property name="x">625</property>
+            <property name="y">813</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="text_avto">
+            <property name="width_request">280</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="text" translatable="yes">Автомобиль:</property>
+          </object>
+          <packing>
+            <property name="x">625</property>
+            <property name="y">850</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="text_tsvet_avto">
+            <property name="width_request">280</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="text" translatable="yes">Цвет авто:</property>
+          </object>
+          <packing>
+            <property name="x">625</property>
+            <property name="y">887</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="text_other">
+            <property name="width_request">280</property>
+            <property name="height_request">30</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="text" translatable="yes">Другое:</property>
+          </object>
+          <packing>
+            <property name="x">625</property>
+            <property name="y">925</property>
           </packing>
         </child>
       </object>

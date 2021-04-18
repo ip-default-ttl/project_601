@@ -87,6 +87,11 @@ GtkWidget* text_number;
 GtkWidget* text_familia;
 GtkWidget* text_imya;
 GtkWidget* text_otchestvo;
+GtkWidget* text_dolzhnost;
+GtkWidget* text_avto;
+GtkWidget* text_tsvet_avto;
+GtkWidget* text_other;
+
 //какая-то неведомая поебень
 GtkBuilder* builder;
 GdkPixbuf* ccc;
@@ -140,6 +145,10 @@ struct record
   std::string familia;
   std::string imya;
   std::string otchestvo;
+  std::string dolzhnost;
+  std::string avto;
+  std::string tsvet_avto;
+  std::string other;
 };
 
 class database
@@ -171,7 +180,18 @@ public:
       pos = line.find(";");
       data[i].otchestvo=line.substr(0,pos);
       line.erase(0,pos+1);
-      cout<<data[i].nomer<<'\n';
+      pos = line.find(";");
+      data[i].dolzhnost=line.substr(0,pos);
+      line.erase(0,pos+1);
+      pos = line.find(";");
+      data[i].avto=line.substr(0,pos);
+      line.erase(0,pos+1);
+      pos = line.find(";");
+      data[i].tsvet_avto=line.substr(0,pos);
+      line.erase(0,pos+1);
+      pos = line.find(";");
+      data[i].other=line.substr(0,pos);
+      line.erase(0,pos+1);
     }
     fin.close();
   }
@@ -228,6 +248,10 @@ int main (int argc, char* argv[])
   text_familia = GTK_WIDGET(gtk_builder_get_object(builder, "text_familia"));
   text_imya = GTK_WIDGET(gtk_builder_get_object(builder, "text_imya"));
   text_otchestvo = GTK_WIDGET(gtk_builder_get_object(builder, "text_otchestvo"));
+  text_dolzhnost = GTK_WIDGET(gtk_builder_get_object(builder, "text_dolzhnost"));
+  text_avto = GTK_WIDGET(gtk_builder_get_object(builder, "text_avto"));
+  text_tsvet_avto = GTK_WIDGET(gtk_builder_get_object(builder, "text_tsvet_avto"));
+  text_other = GTK_WIDGET(gtk_builder_get_object(builder, "text_other"));
 
   entry2_1 = GTK_WIDGET(gtk_builder_get_object(builder, "entry2_1"));
 
@@ -356,9 +380,9 @@ void on_button3_clicked (GtkButton *button, gpointer user_data)
 void toggle1_toggled(GtkButton *button, gpointer user_data)
 {
   std::string msg;
-  if (o) msg="1";
-  else msg="0";
-  write (serial_port,msg.c_str() , 100);
+  if (o) msg="ser2";
+  else msg="ser3";
+  write (serial_port,msg.c_str(), 100);
   o=!o;
 }
 
@@ -525,7 +549,7 @@ void recognizer()
       ab[i]=toupper(ab[i]);
   }
   wtf = dbase.search(ab);
-  std::cout<<wtf.nomer<<'\n';
+
   //g_idle_add(GSourceFunc(draw_responsed_data), NULL);
   }
   plate.clear();
@@ -544,8 +568,12 @@ void on_button26_clicked(GtkButton *button, gpointer user_data)
   std::string search_number = std::string(gtk_entry_get_text(GTK_ENTRY(entry2_1)));
   record current;
   current = dbase.search(search_number);
-  gtk_entry_set_text(GTK_ENTRY(text_number), current.nomer.c_str());
-  gtk_entry_set_text(GTK_ENTRY(text_familia), current.familia.c_str());
-  gtk_entry_set_text(GTK_ENTRY(text_imya), current.imya.c_str());
-  gtk_entry_set_text(GTK_ENTRY(text_otchestvo), current.otchestvo.c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_number), ("Номер: "+current.nomer).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_familia), ("Фамилия: "+current.familia).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_imya), ("Имя: "+current.imya).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_otchestvo), ("Отчество: "+current.otchestvo).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_dolzhnost), ("Должность: "+current.dolzhnost).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_avto), ("Автомобиль: "+current.avto).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_tsvet_avto), ("Цвет авто: "+current.tsvet_avto).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_other), ("Другое: "+current.other).c_str());
 }

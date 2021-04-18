@@ -1,5 +1,5 @@
 3
-номер;фамилия;имя;отчество;
-A999MP99;Зубенко;Михаил;Петрович;
-A777MP77;Testov;Test;Testovich;
-A005MPP97;Test;Test;Test;
+номер;фамилия;имя;отчество;должность;автомобиль;цвет авто;другое;
+A999MP99;Зубенко;Михаил;Петрович;Мафиозник;Toyota_Camry;розовый;XD;
+A777MP77;Testov;Test;Testovich;test;test;test;test;
+A005MPP97;Test;Test;Test;test;test;test;test;
