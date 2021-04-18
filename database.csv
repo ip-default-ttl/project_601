@@ -1,5 +1,5 @@
 3
-номер;фамилия;имя;отчество;должность;автомобиль;цвет авто;другое;
-A999MP99;Зубенко;Михаил;Петрович;Мафиозник;Toyota_Camry;розовый;XD;
-A777MP77;Testov;Test;Testovich;test;test;test;test;
-A005MPP97;Test;Test;Test;test;test;test;test;
+номер;фамилия;имя;отчество;должность;автомобиль;цвет_авто;другое;имя_файла;
+A999MP99;Зубенко;Михаил;Петрович;Мафиозник;Toyota_Camry;розовый;XD;a999mp.png;
+A777MP77;Testov;Test;Testovich;test;test;test;test;a777mp.png;
+A005MPP97;Test;Test;Test;test;test;test;test;a777mp.png;

@@ -53,8 +53,9 @@ int main()
     rectangle(source_img, rbeg, rend, Scalar(1,255,1), 2);
     Mat ROI(source_img, Rect(i.x, i.y,i.width, i.height));
     ROI.copyTo(cropped);
-    imwrite("tess.jpg", cropped);
-    Pix* pix = pixRead("tess.jpg");
+    //imwrite("tess.jpg", cropped);
+    Pix* pix; //= pixRead("tess.jpg");
+    pix->cropped.data;
     OCR[0].SetImage(pix);
     cout<<OCR[0].GetUTF8Text();
     }

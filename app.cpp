@@ -600,6 +600,8 @@ void draw_responsed_data ()
   gtk_entry_set_text(GTK_ENTRY(text_tsvet_avto), ("Цвет авто: "+wtf.tsvet_avto).c_str());
   gtk_entry_set_text(GTK_ENTRY(text_other), ("Другое: "+wtf.other).c_str());
   cv::Mat frame = cv::imread(wtf.filename);
+  if (frame.empty()) return;
+  cv::resize(frame, frame, cv::Size(300,400));
   GdkPixbuf* pix;
   cvtColor(frame, frame, cv::COLOR_BGR2RGBA);
   pix = gdk_pixbuf_new_from_data(frame.data, GDK_COLORSPACE_RGB, true, 8, frame.cols, frame.rows, frame.step, NULL, NULL);
@@ -622,6 +624,8 @@ void on_button26_clicked(GtkButton *button, gpointer user_data)
   gtk_entry_set_text(GTK_ENTRY(text_other), ("Другое: "+current.other).c_str());
   cv::Mat frame = cv::imread(current.filename);
   GdkPixbuf* pix;
+  if (frame.empty()) return;
+  cv::resize(frame, frame, cv::Size(300,400));
   cvtColor(frame, frame, cv::COLOR_BGR2RGBA);
   pix = gdk_pixbuf_new_from_data(frame.data, GDK_COLORSPACE_RGB, true, 8, frame.cols, frame.rows, frame.step, NULL, NULL);
   gtk_image_set_from_pixbuf(GTK_IMAGE(photo),pix);
