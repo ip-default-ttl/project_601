@@ -4,6 +4,7 @@
 #define admin_login "admin" //логин для входа
 #define admin_password "nimda"//пароль для входа
 #define uart_port "/dev/ttyUSB0"//порт uart
+#define image_directory "Images/"
 
 //стрим высокого разрешения для распознавания номеров
 #define main_stream_url "rtsp://admin:180500Kn@172.18.18.3:554/live/0/MAIN"
@@ -123,7 +124,7 @@ void set_blocking (int fd, int should_block);
 
 bool stream();
 void request_sensors();
-void recognizer();
+bool recognizer();
 void request_data_from_sensor (char* sensor, int length);
 bool update_sensor_widget (GtkWidget* widget);
 
@@ -139,6 +140,17 @@ bool update_stream(GdkPixbuf* frame)
   return FALSE;
 }
 
+Pix *mat8ToPix(cv::Mat *mat8)
+{
+  Pix *pixd = pixCreate(mat8->size().width, mat8->size().height, 8);
+  for(int y=0; y<mat8->rows; y++) {
+    for(int x=0; x<mat8->cols; x++) {
+      pixSetPixel(pixd, x, y, (l_uint32) mat8->at<uchar>(y,x));
+    }
+  }
+  return pixd;
+}
+
 struct record
 {
   std::string nomer;
@@ -149,6 +161,7 @@ struct record
   std::string avto;
   std::string tsvet_avto;
   std::string other;
+  std::string filename;
 };
 
 class database
@@ -192,6 +205,9 @@ public:
       pos = line.find(";");
       data[i].other=line.substr(0,pos);
       line.erase(0,pos+1);
+      pos = line.find(";");
+      data[i].filename=image_directory+line.substr(0,pos);
+      line.erase(0,pos+1);
     }
     fin.close();
   }
@@ -201,6 +217,9 @@ public:
     {
       if (data[i].nomer==text) return data[i];
     }
+    record none;
+    none.nomer="";
+    return none;
   }
 };
 
@@ -214,6 +233,7 @@ int main (int argc, char* argv[])
   srand(time(0));
   sensor_data = new char [50];
   dbase.parse("database.csv");
+  wtf.nomer="";
   OCR = new tesseract::TessBaseAPI();
   OCR[0].Init(NULL, "eng");
   OCR[0].SetVariable("tessedit_char_whitelist","abekmhopctyxABEKMHOPCTYX0123456789");
@@ -260,7 +280,7 @@ int main (int argc, char* argv[])
   toggle2_2 = GTK_WIDGET(gtk_builder_get_object(builder, "toggle2_2"));
 
   video1 = GTK_WIDGET(gtk_builder_get_object(builder, "video1"));
-  photo = GTK_WIDGET(gtk_builder_get_object(builder, "video1"));
+  photo = GTK_WIDGET(gtk_builder_get_object(builder, "photo"));
   //подсоединяем функции кнопок
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(window2, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -410,7 +430,7 @@ bool stream()
   unsigned long long int a=0;
   std::string url="rtsp://admin:180500Kn@172.18.18.3:554/live/0/SUB";
   cv::VideoCapture cap(url);
-  if (!cap.isOpened()) {std::cout<<"???";return 1;}
+  if (!cap.isOpened()) {std::cout<<"No video";return 1;}
   cv::Mat frame;
   while (true) {
     cap>>frame;
@@ -519,48 +539,72 @@ bool update_sensor_widget (GtkWidget* widget) //gtk иди в пизду со с
   return FALSE;
 }
 
-void recognizer()
+bool recognizer()
 {
-  sleep(20);
-  cv::Mat source_img=cv::imread("test.png");
+  cv::Mat source_img;
   cv::Mat gray;
   cv::CascadeClassifier cascadePlate;
   cascadePlate.load("haarcascade_russian_plate_number.xml");
-  cv::cvtColor(source_img, gray, cv::COLOR_BGR2GRAY);
-  cv::threshold(gray, gray, 0, 255, cv::THRESH_OTSU|cv::THRESH_BINARY);
-  std::vector<cv::Rect> plate;
-  cascadePlate.detectMultiScale(gray, plate);
-  cv::Point rbeg;
-  cv::Point rend;
-  cv::Mat cropped;
-  for (auto& i:plate)
+  cv::VideoCapture cap;
+  cap.open(main_stream_url);
+  if (!cap.isOpened()) {std::cout<<"No video";return 1;}
+  while(true)
   {
-  rbeg = cv::Point(i.x, i.y);
-  rend = cv::Point(i.x+i.width, i.y+i.height);
-//  cv::rectangle(source_img, rbeg, rend, Scalar(1,255,1), 2);
-  cv::Mat ROI(source_img, cv::Rect(i.x, i.y,i.width, i.height));
-  ROI.copyTo(cropped);
-  cv::imwrite("tess.jpg", cropped);
-  Pix* pix = pixRead("tess.jpg");
-  OCR[0].SetImage(pix);
-  std::string ab = OCR[0].GetUTF8Text();
-  for (int i=0;i<ab.size();i++)
-  {
-      ab[i]=toupper(ab[i]);
+    if (toggle2_1_on)
+    {
+      cap>>source_img;
+      cv::cvtColor(source_img, gray, cv::COLOR_BGR2GRAY);
+      threshold(gray, gray, 0, 255, cv::THRESH_OTSU|cv::THRESH_BINARY);
+      std::vector<cv::Rect> plate;
+      cascadePlate.detectMultiScale(gray, plate);
+      cv::Point rbeg;
+      cv::Point rend;
+      cv::Mat cropped;
+      for (auto& i:plate)
+      {
+        rbeg = cv::Point(i.x, i.y);
+        rend = cv::Point(i.x+i.width, i.y+i.height);
+        cv::Mat ROI(source_img, cv::Rect(i.x, i.y,i.width, i.height));
+        ROI.copyTo(cropped);
+        Pix* pix = mat8ToPix(&cropped);
+        OCR[0].SetImage(pix);
+        std::string ab = OCR[0].GetUTF8Text();
+        for (int i=0;i<ab.size();i++)
+        {
+          ab[i]=toupper(ab[i]);
+        }
+        wtf = dbase.search(ab);
+        if (wtf.nomer!="")
+        {
+          g_idle_add(GSourceFunc(draw_responsed_data), NULL);
+          sleep(1);
+          if (toggle2_2_on)
+          {
+            write (serial_port, "ser1", 4);
+            usleep ((7 + 25) * 100);
+          }
+        }
+      }
+    }
   }
-  wtf = dbase.search(ab);
-
-  //g_idle_add(GSourceFunc(draw_responsed_data), NULL);
-  }
-  plate.clear();
 }
 
 void draw_responsed_data ()
 {
-  gtk_entry_set_text(GTK_ENTRY(text_number), wtf.nomer.c_str());
-  gtk_entry_set_text(GTK_ENTRY(text_familia), wtf.familia.c_str());
-  gtk_entry_set_text(GTK_ENTRY(text_imya), wtf.imya.c_str());
-  gtk_entry_set_text(GTK_ENTRY(text_otchestvo), wtf.otchestvo.c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_number), ("Номер: "+wtf.nomer).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_familia), ("Фамилия: "+wtf.familia).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_imya), ("Имя: "+wtf.imya).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_otchestvo), ("Отчество: "+wtf.otchestvo).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_dolzhnost), ("Должность: "+wtf.dolzhnost).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_avto), ("Автомобиль: "+wtf.avto).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_tsvet_avto), ("Цвет авто: "+wtf.tsvet_avto).c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_other), ("Другое: "+wtf.other).c_str());
+  cv::Mat frame = cv::imread(wtf.filename);
+  GdkPixbuf* pix;
+  cvtColor(frame, frame, cv::COLOR_BGR2RGBA);
+  pix = gdk_pixbuf_new_from_data(frame.data, GDK_COLORSPACE_RGB, true, 8, frame.cols, frame.rows, frame.step, NULL, NULL);
+  gtk_image_set_from_pixbuf(GTK_IMAGE(photo),pix);
+  wtf.nomer="";
 }
 
 void on_button26_clicked(GtkButton *button, gpointer user_data)
@@ -576,4 +620,9 @@ void on_button26_clicked(GtkButton *button, gpointer user_data)
   gtk_entry_set_text(GTK_ENTRY(text_avto), ("Автомобиль: "+current.avto).c_str());
   gtk_entry_set_text(GTK_ENTRY(text_tsvet_avto), ("Цвет авто: "+current.tsvet_avto).c_str());
   gtk_entry_set_text(GTK_ENTRY(text_other), ("Другое: "+current.other).c_str());
+  cv::Mat frame = cv::imread(current.filename);
+  GdkPixbuf* pix;
+  cvtColor(frame, frame, cv::COLOR_BGR2RGBA);
+  pix = gdk_pixbuf_new_from_data(frame.data, GDK_COLORSPACE_RGB, true, 8, frame.cols, frame.rows, frame.step, NULL, NULL);
+  gtk_image_set_from_pixbuf(GTK_IMAGE(photo),pix);
 }
