@@ -288,7 +288,6 @@ int main (int argc, char* argv[])
   }
   set_interface_attribs (serial_port, B9600, 0);
   set_blocking (serial_port, 0);
-  //g_timeout_add_seconds (10, GSourceFunc(request_sensors), NULL);
   gtk_widget_show(window);
   std::thread thread1(stream);
   std::thread thread2(request_sensors);
@@ -455,12 +454,13 @@ void request_sensors ()
       last_updated_interval=0;
       continue;
     }
-    if (duration/10>last_updated_interval) //ебздец тут костыль
+    if (duration/10>last_updated_interval)
     {
       last_updated_interval++;
       update_needed=true;
     }
-    if (update_needed) { //хуйня ебанистическая получилась в итоге
+    if (update_needed)
+    {
       switch (duration/10)
       {
         case 0:
@@ -489,14 +489,14 @@ void request_sensors ()
         default:
         {
           request_data_from_sensor("echo", 4);
-          g_idle_add(GSourceFunc(update_sensor_widget), button2_5); //gtk suka zaebal
+          g_idle_add(GSourceFunc(update_sensor_widget), button2_5);
           update_needed = false;
           break;
         }
       }
     }
   }
-} //я в ахуе, но она бля работает
+}
 
 void request_data_from_sensor (char* sensor, int length)
 {
@@ -522,7 +522,7 @@ void request_data_from_sensor (char* sensor, int length)
   }
 }
 
-bool update_sensor_widget (GtkWidget* widget) //gtk иди в пизду со своей ошибкой сегментации
+bool update_sensor_widget (GtkWidget* widget)
 {
   gtk_button_set_label(GTK_BUTTON(widget), sensor_data);
   return FALSE;
