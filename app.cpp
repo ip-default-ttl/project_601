@@ -5,7 +5,7 @@
 #define admin_password "nimda"//пароль для входа
 #define uart_port "/dev/ttyUSB0"//порт uart
 #define image_directory "Images/"
-#define database_name ""
+#define database_name "database.csv"
 
 //стрим высокого разрешения для распознавания номеров
 #define main_stream_url "rtsp://admin:180500Kn@172.18.18.3:554/live/0/MAIN"
@@ -222,13 +222,13 @@ int main (int argc, char* argv[])
   gtk_init(&argc, &argv);
   srand(time(0));
   sensor_data = new char [50];
-  dbase.parse("database.csv");
+  dbase.parse(database_name);
   wtf.nomer="";
   OCR = new tesseract::TessBaseAPI();
   OCR[0].Init(NULL, "eng");
   OCR[0].SetVariable("tessedit_char_whitelist","abekmhopctyxABEKMHOPCTYX0123456789");
   OCR[0].SetVariable("user_defined_dpi", "100");
-  builder = gtk_builder_new_from_file("app.glade");
+  builder = gtk_builder_new_from_file("Resources/app.glade");
   //окно входа
   window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
 
