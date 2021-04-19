@@ -48,7 +48,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Нажмите, чтобы запросить данные</property>
+            <property name="tooltip_text" translatable="yes">Данные обновляются автоматически</property>
             <property name="image_position">bottom</property>
             <signal name="clicked" handler="on_button4_clicked" swapped="no"/>
           </object>
@@ -64,7 +64,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Нажмите, чтобы запросить данные</property>
+            <property name="tooltip_text" translatable="yes">Данные обновляются автоматически</property>
           </object>
           <packing>
             <property name="y">40</property>
@@ -79,6 +79,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Данные обновляются автоматически</property>
           </object>
           <packing>
             <property name="y">200</property>
@@ -104,6 +105,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Данные обновляются автоматически</property>
           </object>
           <packing>
             <property name="y">280</property>
@@ -117,6 +119,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Включает алгоритм распознавания номеров</property>
           </object>
           <packing>
             <property name="x">1050</property>
@@ -131,6 +134,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Программа сама отправит запрос на открытие шлакбаума, если найдет известный номер</property>
           </object>
           <packing>
             <property name="x">1050</property>
